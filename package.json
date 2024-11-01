@@ -1,0 +1,24 @@
+{
+  "name": "@imaginarymachines/skygram",
+  "module": "index.ts",
+  "type": "module",
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "workspaces": [
+    "skygram-api",
+    "skygram-web"
+  ],
+  "dependencies": {
+    "@atproto/api": "^0.13.14",
+    "@headlessui/react": "^2.2.0",
+    "concurrently": "^9.0.1",
+    "lucide-react": "^0.454.0"
+  },
+  "scripts": {
+    "dev": "concurrently \"cd skygram-api && bun run dev\" \"cd skygram-web && bun run dev\""
+  }
+}
