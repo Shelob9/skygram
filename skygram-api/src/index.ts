@@ -1,9 +1,12 @@
 import { Agent } from '@atproto/api';
 import { Hono } from 'hono';
+import { cors } from 'hono/cors';
 
 const app = new Hono()
-const url = `https://skygram.imaginarymachines.xyz`
-
+const url = `https://skygram.app`
+app.use('*', cors({
+  origin: '*'
+}));
 app.get('/', (c) => {
   return c.html(`<h1>Not yet</h1>`)
 })
