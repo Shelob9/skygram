@@ -1,4 +1,6 @@
-import { HouseIcon, PlusCircle } from "lucide-react";
+import { BrowserOAuthClient, OAuthSession } from '@atproto/oauth-client-browser';
+import { HouseIcon, PlusCircle, SearchIcon } from "lucide-react";
+import { useEffect } from "react";
 import { User } from ".";
 
 const logo : {
@@ -8,11 +10,63 @@ const logo : {
     src: "https://cdn.bsky.app/img/feed_fullsize/plain/did:plc:payluere6eb3f6j5nbmo2cwy/bafkreie2aefqvw3bbhn75rpexgzjgbzijul2td3lmkdgo7ibpjx2svy3ou@jpeg",
     alt: "Zinnia flower. Very pink, very bloomed, but still blooming "
 }
-export default function Header({
-    loggedInUser,
-}:{
+
+
+async function init(){
+    const client = await BrowserOAuthClient.load({
+        clientId: 'https://skygram.app/api/oauth.json',
+      });
+
+    try {
+        const result: undefined | { session: OAuthSession; state?: string } = await client.init()
+
+        if (result) {
+            const { session, state } = result
+            if (state != null) {
+                    console.log(
+                    `${session.sub} was successfully authenticated (state: ${state})`,
+                    )
+            } else {
+                console.log(`${session.sub} was restored (last active session)`)
+            }
+        }
+        return result;
+    } catch (error) {
+        console.error({error})
+        throw error
+
+    }
+}
+
+type HeaderProps = {
     loggedInUser: User
-}) {
+}
+function UserAvatar(
+    {
+        loggedInUser,
+    }:HeaderProps
+){
+    return (
+        <img
+            className="h-10 rounded-full cursor-pointer"
+            src={loggedInUser.avatar}
+            alt={`${loggedInUser.username} avatar`}
+        />
+    )
+}
+export default function Header({
+    //@ts-ignore
+    loggedInUser,
+}:HeaderProps) {
+    useEffect(() => {
+        init().then((result) => {
+            console.log({
+                initResult:result
+            })
+        }).catch((error) => {
+            console.error({initError:error})
+        });
+    },[])
     return (
         <div className="sticky top-0 border-b shadow-sm bg-white z-30">
           {/** <!-- Header --> */}
@@ -38,20 +92,7 @@ export default function Header({
 
             <div className="relative mt-1">
               <div className="absolute top-2 left-2">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-5 w-5 text-gray-500"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  stroke-width="2"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                  />
-                </svg>
+                <SearchIcon />
               </div>
               <input
                 placeholder="Search"
@@ -70,11 +111,7 @@ export default function Header({
                     className="h-6 w-6 cursor-pointer hover:scale-125 transition-transform duration-200 ease-out"
                 />
 
-                <img
-                    className="h-10 rounded-full cursor-pointer"
-                    src={loggedInUser.avatar}
-                    alt={`${loggedInUser.username} avatar`}
-                />
+
             </div>
           </div>
         </div>

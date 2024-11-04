@@ -48,7 +48,7 @@ function useFeed({did,rkey}:{
 
 
       const preparedPost : PostProps = {
-        id: post.post.cid,
+        id: post.post.uri.split('/').slice(-1)[0],
         username: post.post.author.handle,
         displayName: post.post.author.displayName as string,
         avatar: post.post.author.avatar as string,
