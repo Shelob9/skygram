@@ -110,9 +110,7 @@ function App() {
     rkey: gardening.rkey,
   })
   console.log({posts})
-  if(!posts || !posts.length){
-    return <div>Loading...</div>
-  }
+
   return (
     <Skygram posts={posts} />
   )

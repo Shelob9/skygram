@@ -1,3 +1,4 @@
+import { LoaderCircle } from "lucide-react";
 import Aside from "./Aside";
 import Header from "./Header";
 import Post, { PostProps } from "./Post";
@@ -33,9 +34,12 @@ export default function Skygram({posts}:{
 
 
             <>
-            {posts.map((post)=>(
-              <Post {...post} key={post.id}/>
-            ))}
+              {posts && posts.length ? posts.map((post)=>(
+                <Post {...post} key={post.id}/>
+              )):<LoaderCircle
+              className="animate-spin h-5 w-5 mr-3 ..."
+
+              />}
             </>
           </section>
 
