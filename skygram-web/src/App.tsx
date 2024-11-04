@@ -80,6 +80,7 @@ function useFeed({did,rkey}:{
             cursor,
           },
         );
+
         setPosts((prev)=>{
           return {
             ...prev,

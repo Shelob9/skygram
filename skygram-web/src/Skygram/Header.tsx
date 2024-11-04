@@ -91,10 +91,13 @@ export default function Header({
             {/** <!-- Middle --> */}
 
             <div className="relative mt-1">
-              <div className="absolute top-2 left-2">
+              <div className="absolute top-2 left-2"
+                style={{visibility:'hidden'}}
+              >
                 <SearchIcon />
               </div>
               <input
+                style={{visibility:'hidden'}}
                 placeholder="Search"
                 className="pl-10 rounded-md focus:ring-black focus:border-black bg-gray-50 border-gray-500 text-sm"
                 type="text"

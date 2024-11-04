@@ -37,8 +37,7 @@ export default function Skygram({posts}:{
               {posts && posts.length ? posts.map((post)=>(
                 <Post {...post} key={post.id}/>
               )):<LoaderCircle
-              className="animate-spin h-5 w-5 mr-3 ..."
-
+                className="animate-spin h-5 w-5 mr-3 ..."
               />}
             </>
           </section>
