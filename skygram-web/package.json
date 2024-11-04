@@ -3,6 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "entry": "index.html",
   "scripts": {
     "dev": "vite --port=5000",
     "check": "tsc -b",

@@ -25,7 +25,8 @@ function useFeed({did,rkey}:{
       return []
     }
 
-    return Object.values(posts).map((post)=>{
+    return Object.keys(posts).map((_value: string, index: number)=>{
+      const post = posts[index]
       if(!post.post.embed){
         return null
       }
@@ -64,6 +65,7 @@ function useFeed({did,rkey}:{
         time: post.post.record.createdAt,
         // @ts-ignore
         caption: post.post.record.text as string,
+        index,
       }
       return preparedPost
     }).filter((post)=>post !== null) as PostProps[]
@@ -109,7 +111,6 @@ function App() {
     did: gardening.did,
     rkey: gardening.rkey,
   })
-  console.log({posts})
 
   return (
     <Skygram posts={posts} />

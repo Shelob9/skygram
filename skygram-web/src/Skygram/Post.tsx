@@ -200,6 +200,7 @@ export type PostProps = {
   postImages:ViewImage[]
   id: string;
   time: string;
+  index: number;
 }
 export default function Post({
   username,

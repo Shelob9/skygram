@@ -1,0 +1,58 @@
+name: Deploy Skygram Web
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy_api:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+
+    - name: Install Bun
+      run: npm i bun -g
+
+    - name: Install dependencies
+      working-directory: skygram-api
+      run: bun i
+
+    - name: Deploy to Cloudflare
+      working-directory: skygram-api
+      run:
+        npx wrangler deploy --compatibility-date 2024-11-04
+      env:
+        CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+  deploy_web:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+
+    - name: Install Bun
+      run: npm i bun -g
+
+    - name: Install dependencies
+      working-directory: skygram-web
+      run: bun i
+
+    - name: Deploy to Cloudflare
+      working-directory: skygram-web
+      run:
+        npx wrangler deploy --assets ./dist --name skygram-web --compatibility-date 2024-11-04
+      env:
+        CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
