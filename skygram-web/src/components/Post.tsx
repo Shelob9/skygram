@@ -52,10 +52,7 @@ function Embed({embed}:{
 
 
 
-function blueskyPostImageToUrl(authorDid:string,link:string,type:string){
 
-	return `https://cdn.bsky.app/img/feed_thumbnail/plain/${authorDid}/${link}@${type.replace('image/','')}`;
-}
 export function blueskyPostUriToUrl(uri:string,authorHandle:string){
     //take only the part after app.bsky.feed.post/ in uri
     uri = uri.split('/').slice(-1)[0];

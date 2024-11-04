@@ -1,13 +1,14 @@
 import { Agent, AppBskyFeedDefs } from "@atproto/api";
-import { useEffect, useState } from "react";
-import Layout from "./components/Layout";
-import Post from "./components/Post";
-import Virtual from "./components/Virtual";
+import { useEffect, useMemo, useState } from "react";
+import Skygram from "./Skygram";
+import { PostProps, ViewImage } from "./Skygram/Post";
 
 const agent = new Agent({
   service:
     "https://api.bsky.app",
 });
+
+
 
 function useFeed({did,rkey}:{
   did:string,
@@ -19,6 +20,54 @@ function useFeed({did,rkey}:{
   // {postUri: post}
   const [posts, setPosts] = useState<{[key:number]:AppBskyFeedDefs.FeedViewPost}>({});
 
+  const prepared = useMemo<PostProps[]>(()=>{
+    if(! posts){
+      return []
+    }
+
+    return Object.values(posts).map((post)=>{
+      if(!post.post.embed){
+        return null
+      }
+      const embed = post.post.embed;
+      const images = embed.images;
+      console.log(images)
+      if(!Array.isArray(images)){
+          return null;
+      }
+
+      const postImages : ViewImage[] = images.map((image, ) => ({
+        alt: image.alt,
+        thumb: image.thumb,
+        fullsize: image.fullsize,
+        aspectRatio: image.aspectRatio,
+              // id is between last / and last @ in image.fullsize
+        id: image.fullsize.split('/').slice(-1)[0].split('@')[0],
+      }))
+
+
+      const preparedPost : PostProps = {
+        id: post.post.cid,
+        username: post.post.author.handle,
+        displayName: post.post.author.displayName as string,
+        avatar: post.post.author.avatar as string,
+
+        comments: [{
+          id: 0,
+          username: post.post.author.handle,
+          avatar: post.post.author.avatar as string,
+          comment: 'Fake self comment',
+          time: '5 days ago'
+        }],
+        postImages,
+        // @ts-ignore
+        time: post.post.record.createdAt,
+        // @ts-ignore
+        caption: post.post.record.text as string,
+      }
+      return preparedPost
+    }).filter((post)=>post !== null) as PostProps[]
+  },[posts])
   useEffect(() => {
     const getFeed = async() => {
       try {
@@ -47,7 +96,7 @@ function useFeed({did,rkey}:{
     setCursor(nextCursor)
   }
 
-  return {getNext,posts}
+  return {getNext,posts:prepared}
 }
 const gardening = {
   did: `did:plc:5rw2on4i56btlcajojaxwcat`,
@@ -61,24 +110,11 @@ function App() {
     rkey: gardening.rkey,
   })
   console.log({posts})
-
+  if(!posts || !posts.length){
+    return <div>Loading...</div>
+  }
   return (
-    <Layout
-      CenterTop={() => <div>CenterTop</div>}
-      Left={() => <div>Left</div>}
-      Right={() => <div>Right</div>}
-    >
-
-      <Virtual
-        count={Object.keys(posts).length}
-        Item={({index}) => {
-          const post = posts[index]
-          return (
-            <Post post={post} />
-          )
-        }}
-      />
-    </Layout>
+    <Skygram posts={posts} />
   )
 }
 
