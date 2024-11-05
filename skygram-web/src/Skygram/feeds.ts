@@ -3,7 +3,8 @@ export type Feed ={
     did: string
     label: string
     emoji: string
-    didDisplay: string
+    didDisplay: string,
+    displayName?: string
 }
 const feeds : Feed[] = [
     //Gardening
@@ -18,7 +19,7 @@ const feeds : Feed[] = [
     },
     //toe beans
     {
-        did: `blueskyfeeds.com`,
+        did: `eubjsqnf5edgvcc6zuoyixhw`,
         rkey: `toe-beans`,
         label: `Toe Beans`,
         //cat emoji
@@ -26,21 +27,11 @@ const feeds : Feed[] = [
     },
     //birds daryllmarie.bsky.social/feed/aaagllxbcbsje
     {
-        did: ` daryllmarie.bsky.social`,
+        did: `daryllmarie.bsky.social`,
         rkey: `aaagllxbcbsje`,
         label: `Birds`,
         //bird emoji
         emoji: `🐦`//
-    },
-    //art
-    //https://bsky.app/profile/bsky.art/feed/art-new
-
-    {
-        did: `bsky.art`,
-        rkey: `art-new`,
-        label: `Art`,
-        //paint palette emoji
-        emoji: `🎨`
     },
     //mamals
     //https://bsky.app/profile/daryllmarie.bsky.social/feed/aaan2gurxv3kk
@@ -54,13 +45,41 @@ const feeds : Feed[] = [
     //marine life
     //https://bsky.app/profile/daryllmarie.bsky.social/feed/aaacjerk7gwek
     {
-        did: `daryllmarie.bsky.social`,
+        didDisplay: `daryllmarie.bsky.social`,
+        did: `ffkgesg3jsv2j7aagkzrtcvt`,
+        displayName: `Daryll Marie`,
         rkey: `aaacjerk7gwek`,
         label: `Marine Life`,
         //fish emoji
         emoji: `🐟`
+    },
+    //dogs
+    //https://bsky.app/profile/crevier.bsky.social/feed/aaangplovi6dw
+    //lcn5zsz2e7kjwoe4ldf3chr5
+    {
+        did: `lcn5zsz2e7kjwoe4ldf3chr5`,
+        didDisplay: `crevier.bsky.social`,
+        rkey: `aaangplovi6dw`,
+        label: `Dogs`,
+        //dog emoji
+        emoji: `🐕`
     }
 ].map(feed => {
+    if(!feed.didDisplay && feed.did === `daryllmarie.bsky.social`){
+        feed = {
+            ...feed,
+            did: `ffkgesg3jsv2j7aagkzrtcvt`,
+            didDisplay: `daryllmarie.bsky.social`,
+            displayName: `Daryll Marie`,
+        }
+    }
+    if(!feed.didDisplay && feed.did === `eubjsqnf5edgvcc6zuoyixhw`){
+        feed = {
+            ...feed,
+            didDisplay: `blueskyfeeds.com`,
+            displayName: `Bluesky Feeds`,
+        }
+    }
     if(!feed.didDisplay){
         feed.didDisplay = feed.did
     }

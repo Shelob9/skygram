@@ -145,7 +145,7 @@ export default function Skygram() {
           </section>
 
           <Aside
-            loggedInUser={user}
+            currentFeed={currentFeed}
           />
         </main>
       </>

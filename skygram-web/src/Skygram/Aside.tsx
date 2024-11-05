@@ -1,45 +1,40 @@
-import { User } from ".";
-import feeds from "./feeds";
+import feeds, { Feed } from "./feeds";
 
-//@ts-ignore
-export default function Aside(props:{
-    loggedInUser: User
-}) {
+export default function Aside({ currentFeed }: { currentFeed?: Feed }) {
     return (
         <section className="hidden md:inline-grid md:col-span-1">
             <div className="fixed w-[380px]">
-              <div className="mt-14 ml-10">
-                <h3 className="text-lg">
-                  Feeds Used</h3>
-                  <ul className="mt-4">
-                    {feeds.map((feed) => (
-                      <li key={feed.rkey} className="flex items-center">
-
-                        <a href={`https://bsky.app/profile/${feed.didDisplay}/feed/${feed.rkey}`}
-                          className="flex items-center"
-                          rel="noreferrer"
-                          target="_blank"
-                        >
-                          <span className="mt-4 block">
-                          <span className="mr-2">{feed.emoji}</span>
-                          <span>{feed.label}</span>
-                          </span>
-                          <span className="mt-4 block">
-                            <span className="ml-4 block">
-                              By: <a href={`https://bsky.app/profile/${feed.didDisplay}`}
-                                    rel="noreferrer"
-                                    target="_blank">
-                                {feed.didDisplay}
-                              </a>
-                            </span>
-                          </span>
-                        </a>
-                      </li>
-                    ))}
-                  </ul>
-              </div>
+                <div className="mt-14 ml-10">
+                    <h3 className="text-lg">Feeds Used</h3>
+                    <ul className="mt-4">
+                        {feeds.map((feed) => {
+                            const isActive = currentFeed && feed.rkey === currentFeed.rkey;
+                            return (
+                                <li
+                                    key={feed.rkey}
+                                    className={`mb-4 ${isActive ? "border-b border-gray-300" : ""}`}
+                                >
+                                    <div className="font-bold">
+                                        <a
+                                            href={`https://bsky.app/profile/${feed.didDisplay}/feed/${feed.rkey}`}
+                                        >
+                                            {feed.emoji} {feed.label}
+                                        </a>
+                                    </div>
+                                    <a
+                                        href={`https://bsky.app/profile/${feed.didDisplay}`}
+                                        className="text-blue-500"
+                                        rel="noreferrer"
+                                        target="_blank"
+                                    >
+                                        {feed.displayName ? `${feed.displayName} (@${feed.didDisplay})` : `@${feed.didDisplay}`}
+                                    </a>
+                                </li>
+                            );
+                        })}
+                    </ul>
+                </div>
             </div>
-          </section>
-    )
-
+        </section>
+    );
 }
