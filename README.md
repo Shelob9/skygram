@@ -1,15 +1,19 @@
-# @imaginarymachines/skygram
+# Skygram dot app
 
-To install dependencies:
+[https://skgram.app](https://skgram.app) source.
 
-```bash
-bun install
-```
+## Development
 
-To run:
+- Install bun first if needed:
+  - `npm i bun -g`
+- Install
+  - `bun i`
+  - This installs web and api
+- Start
+  - `bun run dev`
+  - This starts web and api
 
-```bash
-bun run index.ts
-```
+### Packages
 
-This project was created using `bun init` in bun v1.1.3. [Bun](https://bun.sh) is a fast all-in-one JavaScript runtime.
+- [web](./skygram-web/README.md)
+- [api](./skygram-api/README.md)

@@ -1,8 +1,13 @@
-```
-npm install
-npm run dev
-```
+# API For Skygram.app
 
-```
-npm run deploy
-```
+[https://skgram.app](https://skgram.app/api) source.
+
+## Development
+Run from root dir is better
+
+- `bun i`
+- `bun run dev`
+
+## Deploy
+
+- `bun run deploy`
