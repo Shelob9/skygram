@@ -1,4 +1,5 @@
 import { SearchIcon } from "lucide-react";
+import { TbBrandGithub } from "react-icons/tb";
 import { User } from ".";
 import Bluesky from "../components/Bluesky";
 import { Feed } from './feeds';
@@ -60,7 +61,9 @@ export default function Header({
                 />
             </div>
             <div className="cursor-pointer w-24 inline-grid ">
-              <h1>Skygram</h1>
+              <h1
+                className="hidden md:inline text-2xl font-bold"
+              >Skygram</h1>
             </div>
 
             {/** <!-- Middle --> */}
@@ -76,16 +79,22 @@ export default function Header({
                 onChangeFeed={setCurrentFeed}
             />
             </div>
-
             {/** <!-- Right --> */}
             <div className="flex space-x-4 items-center">
-
-                <Bluesky
-                  href="https://bsky.app/profile/skygram.app"
-                   className="h-6 w-6 cursor-pointer hover:scale-125 transition-transform duration-200 ease-out hidden md:inline-flex"
+              <a
+                href="https://github.com/shelob9/skygram"
+                target="_blank"
+                rel="noreferrer"
+                className="hidden md:inline"
+              >
+                <TbBrandGithub
+                  className="h-6 w-6 cursor-pointer hover:scale-125 transition-transform duration-200 ease-out hidden md:inline-flex"
                 />
-
-
+              </a>
+              <Bluesky
+                href="https://bsky.app/profile/skygram.app"
+                  className="h-6 w-6 cursor-pointer hover:scale-125 transition-transform duration-200 ease-out hidden md:inline-flex"
+              />
             </div>
           </div>
         </div>

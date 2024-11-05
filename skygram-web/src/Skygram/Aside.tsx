@@ -16,6 +16,8 @@ export default function Aside({ currentFeed }: { currentFeed?: Feed }) {
                                 >
                                     <div className="font-bold">
                                         <a
+                                            rel="noreferrer"
+                                            target="_blank"
                                             href={`https://bsky.app/profile/${feed.didDisplay}/feed/${feed.rkey}`}
                                         >
                                             {feed.emoji} {feed.label}
