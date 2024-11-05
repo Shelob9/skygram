@@ -15,7 +15,6 @@ export default function Aside(props:{
                     {feeds.map((feed) => (
                       <li key={feed.rkey} className="flex items-center">
 
-
                         <a href={`https://bsky.app/profile/${feed.didDisplay}/feed/${feed.rkey}`}
                           className="flex items-center"
                           rel="noreferrer"
