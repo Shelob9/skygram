@@ -22,3 +22,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+skygram-web/.wrangler/tmp/deploy-YXLsDn/no-op-worker.js
+skygram-web/.wrangler/tmp/deploy-8jRl3f/no-op-worker.js
+skygram-web/.wrangler/tmp/deploy-8jRl3f/no-op-worker.js.map

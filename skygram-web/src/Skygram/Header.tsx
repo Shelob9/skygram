@@ -1,5 +1,6 @@
-import { HouseIcon, PlusCircle, SearchIcon } from "lucide-react";
+import { SearchIcon } from "lucide-react";
 import { User } from ".";
+import Bluesky from "../components/Bluesky";
 import { Feed } from './feeds';
 import FeedSelector from './Feeds/FeedSelector';
 
@@ -78,12 +79,10 @@ export default function Header({
 
             {/** <!-- Right --> */}
             <div className="flex space-x-4 items-center">
-                <HouseIcon
-                    className="h-6 w-6 cursor-pointer hover:scale-125 transition-transform duration-200 ease-out hidden md:inline-flex"
 
-                />
-                <PlusCircle
-                    className="h-6 w-6 cursor-pointer hover:scale-125 transition-transform duration-200 ease-out"
+                <Bluesky
+                  href="https://bsky.app/profile/skygram.app"
+                   className="h-6 w-6 cursor-pointer hover:scale-125 transition-transform duration-200 ease-out hidden md:inline-flex"
                 />
 
 
