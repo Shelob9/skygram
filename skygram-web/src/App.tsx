@@ -106,7 +106,6 @@ const gardening = {
   rkey: `aaao6g552b33o`,
 }
 function App() {
-
   const {posts} = useFeed({
 
     did: gardening.did,

@@ -1,5 +1,7 @@
 import { LoaderCircle } from "lucide-react";
+import { useState } from "react";
 import Aside from "./Aside";
+import feeds, { Feed } from "./feeds";
 import Header from "./Header";
 import Post, { PostProps } from "./Post";
 
@@ -12,6 +14,8 @@ export type User = {
 export default function Skygram({posts}:{
   posts:PostProps[]
 }) {
+  const [currentFeed, setCurrentFeed] = useState<Feed>(feeds[0]);
+
   const user : User = {
     username: '@Josh412.com',
     displayName: 'Josh',
@@ -23,6 +27,8 @@ export default function Skygram({posts}:{
       <>
         <Header
           loggedInUser={user}
+          currentFeed={currentFeed}
+          setCurrentFeed={setCurrentFeed}
         />
 
         {/** <!-- Feed --> */}

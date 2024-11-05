@@ -1,7 +1,7 @@
-import { BrowserOAuthClient, OAuthSession } from '@atproto/oauth-client-browser';
 import { HouseIcon, PlusCircle, SearchIcon } from "lucide-react";
-import { useEffect } from "react";
 import { User } from ".";
+import { Feed } from './feeds';
+import FeedSelector from './Feeds/FeedSelector';
 
 const logo : {
     src:string;
@@ -12,37 +12,15 @@ const logo : {
 }
 
 
-async function init(){
-    const client = await BrowserOAuthClient.load({
-        clientId: 'https://skygram.app/api/oauth.json',
-      });
-
-    try {
-        const result: undefined | { session: OAuthSession; state?: string } = await client.init()
-
-        if (result) {
-            const { session, state } = result
-            if (state != null) {
-                    console.log(
-                    `${session.sub} was successfully authenticated (state: ${state})`,
-                    )
-            } else {
-                console.log(`${session.sub} was restored (last active session)`)
-            }
-        }
-        return result;
-    } catch (error) {
-        console.error({error})
-        throw error
-
-    }
-}
 
 type HeaderProps = {
-    loggedInUser: User
+    loggedInUser: User,
+    currentFeed: Feed,
+    setCurrentFeed: (feed:Feed) => void
 }
 function UserAvatar(
     {
+
         loggedInUser,
     }:HeaderProps
 ){
@@ -54,19 +32,15 @@ function UserAvatar(
         />
     )
 }
+
+
 export default function Header({
     //@ts-ignore
     loggedInUser,
+    currentFeed,
+    setCurrentFeed,
 }:HeaderProps) {
-    useEffect(() => {
-        init().then((result) => {
-            console.log({
-                initResult:result
-            })
-        }).catch((error) => {
-            console.error({initError:error})
-        });
-    },[])
+
     return (
         <div className="sticky top-0 border-b shadow-sm bg-white z-30">
           {/** <!-- Header --> */}
@@ -96,12 +70,10 @@ export default function Header({
               >
                 <SearchIcon />
               </div>
-              <input
-                style={{visibility:'hidden'}}
-                placeholder="Search"
-                className="pl-10 rounded-md focus:ring-black focus:border-black bg-gray-50 border-gray-500 text-sm"
-                type="text"
-              />
+              <FeedSelector
+                currentFeed={currentFeed}
+                onChangeFeed={setCurrentFeed}
+            />
             </div>
 
             {/** <!-- Right --> */}
