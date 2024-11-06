@@ -53,7 +53,7 @@ function useFeed({did,rkey}:{
         id: image.fullsize.split('/').slice(-1)[0].split('@')[0],
       }))
 
-
+      const rkey = post.post.uri.split('/').slice(-1)[0];
       const preparedPost : PostProps = {
         id: post.post.uri.split('/').slice(-1)[0],
         username: post.post.author.handle,
@@ -73,6 +73,7 @@ function useFeed({did,rkey}:{
         // @ts-ignore
         caption: post.post.record.text as string,
         index,
+        url: `https://bsky.app/profile/${post.post.author.handle}/post/${rkey}`
       }
       return preparedPost
     }).filter((post)=>post !== null) as PostProps[]

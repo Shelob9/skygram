@@ -17,6 +17,23 @@ function PostAuthorLink({handle,children,className}:{
     </a>
   )
 }
+
+function PostLink({url,children,className}:{
+  url: string;
+  children: React.ReactNode;
+  className?: string;
+}){
+  return(
+    <a
+      className={className}
+      href={url}
+      rel="noreferrer"
+      target="_blank"
+    >
+        {children}
+    </a>
+  )
+}
 function PostHeader({ author,avatar}:PostProps) {
   const {handle} = author;
   return (
@@ -36,20 +53,21 @@ function PostHeader({ author,avatar}:PostProps) {
   )
 }
 
-function PostButtons(){
+function PostButtons({url}:PostProps){
   return(
     <div className="flex justify-between px-4 pt-4">
       <div className="flex space-x-4">
-        <HeartIcon
-          className="btn"
-        />
-        <QuoteIcon
-        className="btn"
-
-      />
-
+        <PostLink url={url}>
+          <HeartIcon
+            className="btn hover:text-red-500 hover:scale-110"
+          />
+        </PostLink>
+        <PostLink url={url}>
+          <QuoteIcon
+            className="btn hover:text-red-500 hover:scale-110"
+          />
+        </PostLink>
       </div>
-
     </div>
   )
 }
@@ -66,8 +84,7 @@ function PostCaption({
       >
         <span className="font-bold mr-2">{username}</span>
       </PostAuthorLink>
-        {caption}
-
+      {caption}
     </p>
   )
 }
@@ -127,15 +144,14 @@ export type PostProps = {
   id: string;
   time: string;
   index: number;
-  author: AppBskyActorDefs.ProfileViewBasic
+  author: AppBskyActorDefs.ProfileViewBasic,
+  url: string
 }
 export default function Post(props:PostProps){
   const {
-    username,
-    caption,
     postImages,
     id,
-    author,
+    url,
   } = props;
   return (
       <>
@@ -144,17 +160,16 @@ export default function Post(props:PostProps){
           className="border my-7 bg-white rounded-md"
         >
           <PostHeader {...props} />
-          <PostAuthorLink
-              handle={author.handle}
+          <PostLink
+              url={url}
           >
             <img
               className="w-full object-cover"
               src={postImages[0].fullsize}
               alt={postImages[0].alt}
             />
-          </PostAuthorLink>
-
-          <PostButtons/>
+          </PostLink>
+          <PostButtons {...props} />
           <PostCaption {...props} />
         </div>
       </>

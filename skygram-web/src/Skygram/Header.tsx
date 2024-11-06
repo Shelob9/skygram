@@ -88,12 +88,12 @@ export default function Header({
                 className="hidden md:inline"
               >
                 <TbBrandGithub
-                  className="h-6 w-6 cursor-pointer hover:scale-125 transition-transform duration-200 ease-out hidden md:inline-flex"
+                  className="hover:scale-110 h-6 w-6 cursor-pointer hover:scale-125 transition-transform duration-200 ease-out hidden md:inline-flex"
                 />
               </a>
               <Bluesky
                 href="https://bsky.app/profile/skygram.app"
-                  className="h-6 w-6 cursor-pointer hover:scale-125 transition-transform duration-200 ease-out hidden md:inline-flex"
+                className="hover:scale-110 h-6 w-6 cursor-pointer hover:scale-125 transition-transform duration-200 ease-out hidden md:inline-flex"
               />
             </div>
           </div>

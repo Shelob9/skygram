@@ -20,7 +20,7 @@ export default function FeedSelector({ currentFeed, onChangeFeed }: FeedSelector
                     >
                         <button
                             onClick={() => onChangeFeed(feed)}
-                            className={`flex items-center ${isActive ? ' font-bold' : ''}`}
+                            className={`hover:scale-110 flex items-center ${isActive ? ' font-bold' : ''}`}
                         >
                             <span className="sm:hidden">{feed.emoji}</span>
                             <span className="hidden sm:inline">{feed.emoji} {feed.label}</span>
