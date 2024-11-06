@@ -59,7 +59,7 @@ function useFeed({did,rkey}:{
         username: post.post.author.handle,
         displayName: post.post.author.displayName as string,
         avatar: post.post.author.avatar as string,
-
+        author: post.post.author,
         comments: [{
           id: 0,
           username: post.post.author.handle,

@@ -1,35 +1,38 @@
-import { AppBskyEmbedDefs } from "@atproto/api";
+import { AppBskyActorDefs, AppBskyEmbedDefs } from "@atproto/api";
 import { HeartIcon, QuoteIcon } from "lucide-react";
 
-function PostHeader({ username,avatar}:{
-  username: string;
-  avatar: string;
-}) {
+function PostAuthorLink({handle,children,className}:{
+  handle: string;
+  children: React.ReactNode;
+  className?: string;
+}){
+  return(
+    <a
+      className={className}
+      href={`https://bsky.app/profile/${handle}`}
+      rel="noreferrer"
+      target="_blank"
+    >
+        {children}
+    </a>
+  )
+}
+function PostHeader({ author,avatar}:PostProps) {
+  const {handle} = author;
   return (
-    <div className="flex items-center p-5">
+    <PostAuthorLink
+      handle={handle}
+      className="flex items-center p-4"
+    >
         <img
           className="h-12 rounded-full border p-1 mr-3"
           src={avatar}
-          alt={`${username} avatar`}
+          alt={`${handle} avatar`}
         />
         <p className="flex-1 font-bold">
-          {username}
+           @{handle}
         </p>
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          className="h-6 w-6"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-          strokeWidth="2"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z"
-          />
-        </svg>
-      </div>
+    </PostAuthorLink>
   )
 }
 
@@ -53,15 +56,18 @@ function PostButtons(){
 
 function PostCaption({
   username,
-  caption
-}:{
-  username: string;
-  caption: string;
-}){
+  caption,
+  author: {handle}
+}:PostProps){
   return(
     <p className="p-5 truncate">
-          <span className="font-bold mr-2">{username}</span>
-          {caption}
+      <PostAuthorLink
+        handle={handle}
+      >
+        <span className="font-bold mr-2">{username}</span>
+      </PostAuthorLink>
+        {caption}
+
     </p>
   )
 }
@@ -121,37 +127,36 @@ export type PostProps = {
   id: string;
   time: string;
   index: number;
+  author: AppBskyActorDefs.ProfileViewBasic
 }
-export default function Post({
-  username,
-  avatar,
-  caption,
-  postImages,
-  id,
-}:PostProps){
-    return (
-        <>
-          <div
-            id={`post-${id}`}
-            className="border my-7 bg-white rounded-md"
+export default function Post(props:PostProps){
+  const {
+    username,
+    caption,
+    postImages,
+    id,
+    author,
+  } = props;
+  return (
+      <>
+        <div
+          id={`post-${id}`}
+          className="border my-7 bg-white rounded-md"
+        >
+          <PostHeader {...props} />
+          <PostAuthorLink
+              handle={author.handle}
           >
-            <PostHeader username={username} avatar={avatar}/>
-            <a href={`#post-${id}`}>
             <img
               className="w-full object-cover"
-              //            src="https://images.unsplash.com/photo-1469474968028-56623f02e42e?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=874&q=80"
-
               src={postImages[0].fullsize}
               alt={postImages[0].alt}
             />
-            </a>
+          </PostAuthorLink>
 
-            <PostButtons/>
-            <PostCaption username={username} caption={caption}/>
-            <form className="flex items-center p-4">
-
-            </form>
-          </div>
-        </>
+          <PostButtons/>
+          <PostCaption {...props} />
+        </div>
+      </>
     )
 }
