@@ -1,6 +1,6 @@
-import feeds, { Feed } from "./feeds";
+import feeds, { T_Feed } from "./feeds";
 
-export default function Aside({ currentFeed }: { currentFeed?: Feed }) {
+export default function Aside({ currentFeed }: { currentFeed?: T_Feed }) {
     return (
         <section className="hidden md:inline-grid md:col-span-1">
             <div className="fixed w-[380px]">

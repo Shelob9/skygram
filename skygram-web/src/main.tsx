@@ -14,7 +14,6 @@ const clientId = `http://localhost?${new URLSearchParams({
     }).toString(),
   }).href,
 })}`
-console.log({clientId,hostanme:window.location.hostname})
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <AuthProvider
