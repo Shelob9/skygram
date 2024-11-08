@@ -53,27 +53,15 @@ export default function Virtual({count,Item}:{
       <div
         ref={parentRef}
         className="w-full overflow-auto"
-
       >
         <div
-          style={{
-            height: `${rowVirtualizer.getTotalSize()}px`,
-            width: '100%',
-            position: 'relative',
-          }}
+
         >
           {rowVirtualizer.getVirtualItems().map((virtualRow) => (
             <div
               key={virtualRow.index}
               className={virtualRow.index % 2 ? 'ListItemOdd' : 'ListItemEven'}
-              style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                width: '100%',
-                height: `${virtualRow.size}px`,
-                transform: `translateY(${virtualRow.start}px)`,
-              }}
+
             >
               <Item index={virtualRow.index} />
             </div>

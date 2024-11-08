@@ -1,10 +1,10 @@
-import feeds, { Feed } from "../feeds";
+import feeds, { T_Feed } from "../feeds";
 
 interface FeedSelectorProps {
-    currentFeed: Feed;
-    onChangeFeed: (feed: Feed) => void;
+    currentFeed: T_Feed;
+    onChangeFeed: (feed: T_Feed) => void;
 }
-function key(feed: Feed) {
+function key(feed: T_Feed) {
     return`${feed.did}-${feed.rkey}`;
 }
 

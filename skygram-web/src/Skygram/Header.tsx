@@ -2,7 +2,7 @@ import { SearchIcon } from "lucide-react";
 import { TbBrandGithub } from "react-icons/tb";
 import { User } from ".";
 import Bluesky from "../components/Bluesky";
-import { Feed } from './feeds';
+import { T_Feed } from './feeds';
 import FeedSelector from './Feeds/FeedSelector';
 
 const logo : {
@@ -17,8 +17,8 @@ const logo : {
 
 type HeaderProps = {
     loggedInUser: User,
-    currentFeed: Feed,
-    setCurrentFeed: (feed:Feed) => void
+    currentFeed: T_Feed,
+    setCurrentFeed: (feed:T_Feed) => void
 }
 function UserAvatar(
     {

@@ -1,4 +1,4 @@
-export type Feed ={
+export type T_Feed ={
     rkey: string,
     did: string
     label: string
@@ -6,7 +6,7 @@ export type Feed ={
     didDisplay: string,
     displayName?: string
 }
-const feeds : Feed[] = [
+const feeds : T_Feed[] = [
     //Gardening
     //https://bsky.app/profile/eepy.bsky.social/feed/aaao6g552b33o
     {
