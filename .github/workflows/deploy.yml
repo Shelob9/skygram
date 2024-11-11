@@ -47,6 +47,18 @@ jobs:
       working-directory: skygram-web
       run: bun i
 
+    - name: Create .env
+      run: |
+        if [ "${{ github.ref_name }}" = "main" ]; then
+          echo "VITE_CLIENT_URL=https://skygram.app" > skygram-web/.env
+        else
+          echo "VITE_CLIENT_URL=https://skygram-web-${{ github.ref_name }}.imaginarymachines.workers.dev" > skygram-web/.env
+        fi
+
+    - name: Build
+      working-directory: skygram-web
+      run: bun build
+
     - name: Deploy to Cloudflare
       working-directory: skygram-web
       run: |
@@ -62,7 +74,7 @@ jobs:
       if: github.ref == 'refs/heads/main'
       env:
         CF_ZONE_ID: ${{ secrets.CF_ZONE_ID }}
-      run: npx wrangler cache purge --name skygram-web --zone-id ${{ secrets.CF_ZONE_ID }} --api-token ${{ secrets.CF_API_TOKEN }}
+      run: bunx wrangler cache purge --name skygram-web --zone-id ${{ secrets.CF_ZONE_ID }} --api-token ${{ secrets.CF_API_TOKEN }}
 
     - name: Comment PR
       if: github.ref != 'refs/heads/main'
