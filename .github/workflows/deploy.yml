@@ -1,22 +1,19 @@
 name: Deploy Skygram Web
 
-on:
-  push:
-    branches:
-      - main
+on: ["push"]
 
 jobs:
   deploy_api:
     runs-on: ubuntu-latest
-
+    if: github.ref == 'refs/heads/main'
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: Set up Node.js
       uses: actions/setup-node@v3
       with:
-        node-version: '18'
+        node-version: '20'
 
     - name: Install Bun
       run: npm i bun -g
@@ -28,7 +25,7 @@ jobs:
     - name: Deploy to Cloudflare
       working-directory: skygram-api
       run:
-        npx wrangler deploy --compatibility-date 2024-11-04
+        bun run deploy
       env:
         CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
   deploy_web:
@@ -41,7 +38,7 @@ jobs:
     - name: Set up Node.js
       uses: actions/setup-node@v3
       with:
-        node-version: '18'
+        node-version: '20'
 
     - name: Install Bun
       run: npm i bun -g
@@ -52,7 +49,48 @@ jobs:
 
     - name: Deploy to Cloudflare
       working-directory: skygram-web
-      run:
-        npx wrangler deploy --assets ./dist --name skygram-web --compatibility-date 2024-11-04
+      run: |
+        if [ "${{ github.ref_name }}" = "main" ]; then
+          npx wrangler deploy --assets ./dist --name skygram-web --compatibility-date 2024-11-04
+        else
+          npx wrangler deploy --assets ./dist --name skygram-web-${{ github.ref_name }} --compatibility-date 2024-11-04
+        fi
       env:
         CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+
+    - name: Purge cache
+      if: github.ref == 'refs/heads/main'
+      env:
+        CF_ZONE_ID: ${{ secrets.CF_ZONE_ID }}
+      run: npx wrangler cache purge --name skygram-web --zone-id ${{ secrets.CF_ZONE_ID }} --api-token ${{ secrets.CF_API_TOKEN }}
+
+    - name: Comment PR
+      if: github.ref != 'refs/heads/main'
+      uses: actions/github-script@v4
+      env:
+        SUBDOMAIN: skygram-web-${{ github.ref_name }}
+        DOMAIN: imaginarymachines.workers.dev
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          github.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: `Deployed at https://${process.env.SUBDOMAIN}.${process.env.DOMAIN}`)
+          })
+
+    - name: Comment PR (main)
+      if: github.ref == 'refs/heads/main'
+      uses: actions/github-script@v4
+      env:
+        DOMAIN: imaginarymachines.workers.dev
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          github.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: `Deployed at https://skygram.app`})
+          })
