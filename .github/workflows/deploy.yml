@@ -46,6 +46,10 @@ jobs:
     - name: Install dependencies
       working-directory: skygram-web
       run: bun i
+   
+    - name: Build
+      working-directory: skygram-web
+      run: bun run build
 
     - name: Deploy to Cloudflare
       working-directory: skygram-web
