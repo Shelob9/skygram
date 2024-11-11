@@ -1,0 +1,25 @@
+name: Delete deploys
+
+on:
+  pull_request:
+    types: [closed]
+  delete:
+    branches:
+      - '**'
+
+jobs:
+  delete_web:
+    if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == false
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Setup Node
+      uses: actions/setup-node@v3
+      with:
+        node-version: '20'
+    - name: Delete Cloudflare Pages deployment
+      run: |
+        branch_name=${{ github.event.pull_request.head.ref }}
+        npx wrangler pages project delete skygram-web-${branch_name}
+      env:
+        CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
