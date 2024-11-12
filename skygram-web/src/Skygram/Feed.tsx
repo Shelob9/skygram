@@ -1,16 +1,17 @@
-import { Agent } from "@atproto/api";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { LoaderCircle } from "lucide-react";
 import { Fragment, useRef } from "react";
+import { useApi } from "../ApiProvider/useApi";
+import { T_Feed } from "./feeds";
 import Post from "./Post";
 import useFeed from "./useFeed";
 
 
-export default function Feed({did,rkey,agent}:{
-    did:string,
-    rkey:string,
-    agent: Agent
+export default function Feed({currentFeed}:{
+    currentFeed: T_Feed
 }) {
+    const {did,rkey} = currentFeed
+    const {agent} = useApi()
     const {postIndexes,getPost,postCount } = useFeed({did,rkey,agent})
     const parentRef = useRef<HTMLDivElement>(null)
     const rowVirtualizer = useVirtualizer({
