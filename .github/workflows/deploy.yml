@@ -57,7 +57,7 @@ jobs:
       with:
           apiToken: ${{ secrets.CF_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy dist --name=skygram-web --compatibility-date 2024-11-04
+          command: pages deploy dist --project_name=skygram-web
 
     - name: Deploy Not Main
       if: github.ref != 'refs/heads/main'
@@ -65,7 +65,7 @@ jobs:
       with:
           apiToken: ${{ secrets.CF_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy dist --name=skygram-web-${{ github.ref_name }} --compatibility-date 2024-11-04
+          command: pages deploy dist --project_name=skygram-web-${{ github.ref_name }}
 
     - name: Purge cache
       if: github.ref == 'refs/heads/main'
