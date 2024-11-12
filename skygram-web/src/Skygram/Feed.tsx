@@ -4,6 +4,7 @@ import { useVirtualizer } from "@tanstack/react-virtual";
 import { LoaderCircleIcon } from "lucide-react";
 import { Fragment, useEffect, useMemo, useRef } from "react";
 import { useApi } from "../ApiProvider/useApi";
+import Centered from "../components/Centered";
 import { T_Feed } from "./feeds";
 import { fetchFeed, fetchFeedQueryKeys } from "./Feeds/useFeed";
 import usePosts from "./Feeds/usePosts";
@@ -102,33 +103,31 @@ export default function Feed({currentFeed}:{
                             {isLoaderRow
                                 ? hasNextPage
                                 ? (
-                                    <div className="flex items-center">
-                                        <div>
-                                            <button
-                                                className="bg-blue text-white text-2xl rounded p-2 px-4  items-center"
-                                                disabled={isFetching}
-                                                onClick={()=>{
-                                                    fetchNextPage()
-                                                }}>
-                                                {isFetching ?(
-                                                    <LoaderCircleIcon
-                                                        className="h-6 w-6 animate-spin"
-                                                    />
+                                    <Centered>
+                                        <button
+                                            className="bg-blue text-white text-2xl rounded p-2 px-4  items-center"
+                                            disabled={isFetching}
+                                            onClick={()=>{
+                                                fetchNextPage()
+                                            }}>
+                                            {isFetching ?(
+                                                <LoaderCircleIcon
+                                                    className="h-6 w-6 animate-spin"
+                                                />
 
-                                                ):'Load More'}
-                                            </button>
-                                        </div>
-                                    </div>
+                                            ):'Load More'}
+                                        </button>
+                                    </Centered>
                                 )
-                                : <div className="flex items-center">
+                                : <Centered>
                                     <div className="text-2xl">Done</div>
-                                  </div>
+                                  </Centered>
                                 : <>
                                     <Fragment key={virtualRow.index}>
-                                            <FeedPost
-                                                index={virtualRow.index}
-                                                getPreparedPost={getPreparedPost}
-                                            />
+                                        <FeedPost
+                                            index={virtualRow.index}
+                                            getPreparedPost={getPreparedPost}
+                                        />
                                     </Fragment>
                                 </>}
                             </div>

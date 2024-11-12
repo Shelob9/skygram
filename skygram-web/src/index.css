@@ -26,4 +26,20 @@
   .btn {
     @apply h-7  hover:scale-125 transition-transform duration-200 ease-out cursor-pointer;
   }
+
+  aside {
+    @apply prose  lg:prose-xl prose-slate;
+  }
+
+  aside h2 {
+    @apply text-2xl font-bold;
+  }
+
+  aside h3 {
+    @apply text-xl font-bold;
+  }
+
+  aside h4 {
+    @apply text-lg font-bold;
+  }
 }
