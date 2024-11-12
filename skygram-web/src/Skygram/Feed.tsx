@@ -1,54 +1,142 @@
+import { AppBskyFeedDefs } from "@atproto/api";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import { useVirtualizer } from "@tanstack/react-virtual";
-import { LoaderCircle } from "lucide-react";
-import { Fragment, useRef } from "react";
+import { LoaderCircleIcon } from "lucide-react";
+import { Fragment, useEffect, useMemo, useRef } from "react";
 import { useApi } from "../ApiProvider/useApi";
 import { T_Feed } from "./feeds";
+import { fetchFeed, fetchFeedQueryKeys } from "./Feeds/useFeed";
+import usePosts from "./Feeds/usePosts";
 import Post from "./Post";
-import useFeed from "./useFeed";
 
+
+function FeedPost({index,getPreparedPost}:{
+    index:number,
+    getPreparedPost:(index:number) => AppBskyFeedDefs.FeedViewPost | null
+}) {
+    const post = getPreparedPost(index)
+    if(!post){
+        return null
+    }
+    // @ts-ignore
+    return <Post {...post}/>
+}
 
 export default function Feed({currentFeed}:{
     currentFeed: T_Feed
 }) {
     const {did,rkey} = currentFeed
-    const {agent} = useApi()
-    const {postIndexes,getPost,postCount } = useFeed({did,rkey,agent})
+    const {agent,preferredLanguages} = useApi()
+
+    const {
+        status,
+        data,
+        error,
+        isFetching,
+        isFetchingNextPage,
+        fetchNextPage,
+        hasNextPage,
+      } = useInfiniteQuery({
+        queryKey: fetchFeedQueryKeys({did,rkey,cursor:undefined,preferredLanguages}),
+        //@ts-ignore
+        queryFn: async (ctx) => {
+            return fetchFeed({ agent, cursor:ctx.pageParam, did, rkey, preferredLanguages} ).then(
+                (data:{cursor?:string,feed:AppBskyFeedDefs.FeedViewPost[]}) => {
+                   return data;
+                }
+            )
+        },
+        getNextPageParam: (lastGroup) => lastGroup.cursor,
+        initialPageParam: undefined,
+    })
+    const flatData = useMemo<AppBskyFeedDefs.FeedViewPost[]>(() => {
+        // @ts-ignore
+        return data ? data.pages.flatMap((page:{cursor?:string,feed:AppBskyFeedDefs.FeedViewPost[]}) => page.feed) : [];
+    }, [data])
+    const {getPreparedPost} = usePosts({posts:flatData});
     const parentRef = useRef<HTMLDivElement>(null)
     const rowVirtualizer = useVirtualizer({
-        count: postCount,
+        count: hasNextPage ? flatData.length + 1 : flatData.length,
         getScrollElement: () => parentRef.current,
-        estimateSize: () => 35,
+        estimateSize: () => 100,
         overscan: 5,
-    })
 
-    return (
-        <div>
+    })
+    useEffect(() => {
+        const [lastItem] = [...rowVirtualizer.getVirtualItems()].reverse()
+
+        if (!lastItem) {
+          return
+        }
+
+        if (
+          lastItem.index >= flatData.length - 1 &&
+          hasNextPage &&
+          !isFetchingNextPage
+        ) {
+          fetchNextPage()
+        }
+      }, [hasNextPage, fetchNextPage, isFetchingNextPage, rowVirtualizer, flatData.length])
+
+
+    if('error' === status){
+        return <span>Error: {error.message}</span>
+    }
+    return(
+        <>
             <div
                 ref={parentRef}
-                className="w-full overflow-auto"
             >
-            {postIndexes && postIndexes.length ? (
+                <div
+                    style={{
+                        height: `${rowVirtualizer.getTotalSize()}px`,
+                    }}
+                >
+                    {rowVirtualizer.getVirtualItems().map((virtualRow) => {
+                        const isLoaderRow = virtualRow.index > flatData.length - 1
 
-                <div>
-                    {rowVirtualizer.getVirtualItems().map((virtualRow) => (
-                        <div
-                            key={virtualRow.index}
-                            className={virtualRow.index % 2 ? 'ListItemOdd' : 'ListItemEven'}
-                        >
-                            <Fragment key={virtualRow.index}>
-                                <>
-                                    {getPost(virtualRow.index) ? <Post {...getPost(virtualRow.index)}/> :null}
-                                </>
-                            </Fragment>
+                        return (
+                            <div
+                                key={virtualRow.index}
+                            >
+                            {isLoaderRow
+                                ? hasNextPage
+                                ? (
+                                    <div className="flex items-center">
+                                        <div>
+                                            <button
+                                                className="bg-blue text-white text-2xl rounded p-2 px-4  items-center"
+                                                disabled={isFetching}
+                                                onClick={()=>{
+                                                    fetchNextPage()
+                                                }}>
+                                                {isFetching ?(
+                                                    <LoaderCircleIcon
+                                                        className="h-6 w-6 animate-spin"
+                                                    />
 
-
-                        </div>
-                    ))}
+                                                ):'Load More'}
+                                            </button>
+                                        </div>
+                                    </div>
+                                )
+                                : <div className="flex items-center">
+                                    <div className="text-2xl">Done</div>
+                                  </div>
+                                : <>
+                                    <Fragment key={virtualRow.index}>
+                                            <FeedPost
+                                                index={virtualRow.index}
+                                                getPreparedPost={getPreparedPost}
+                                            />
+                                    </Fragment>
+                                </>}
+                            </div>
+                    )
+                    })}
                 </div>
-            ):<LoaderCircle
-                className="animate-spin h-5 w-5 mr-3 ..."
-                />}
             </div>
-        </div>
+        </>
     )
+
 }

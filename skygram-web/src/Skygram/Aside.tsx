@@ -1,7 +1,6 @@
 import feeds, { T_Feed } from "./feeds";
 
 export default function Aside({ currentFeed }: { currentFeed?: T_Feed }) {
-   console.log(import.meta.env.MODE)
     return (
         <section className="hidden md:inline-grid md:col-span-1">
             <div className="fixed w-[380px]">
@@ -39,9 +38,11 @@ export default function Aside({ currentFeed }: { currentFeed?: T_Feed }) {
                 </div>
             </div>
             {import.meta.env.MODE === "development" && (
-                <>
-                    DEV MODE
-                </>
+                <div className="hidden">
+                    <div className="mt-14 ml-10">
+                        <h3 className="text-lg">DEV MODE</h3>
+                    </div>
+                </div>
             )}
         </section>
     );

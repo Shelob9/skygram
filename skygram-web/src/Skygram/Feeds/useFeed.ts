@@ -7,8 +7,12 @@ export type UseFeedProps = {
   did: string,
   rkey: string,
   preferredLanguages: string
+  limit?: number
 };
-const fetchFeed = async ({ agent, cursor, did, rkey, preferredLanguages }:UseFeedProps) => {
+
+export const fetchFeedQueryKeys = ({ did, rkey, cursor,limit,preferredLanguages }:Omit<UseFeedProps,'agent'>) =>
+  [ did, 'app.bsky.feed.generator', rkey, {cursor,preferredLanguages,limit:limit || 30}];
+export const fetchFeed = async ({ agent, cursor, did, rkey, preferredLanguages }:UseFeedProps) => {
   const { data } = await agent.app.bsky.feed.getFeed(
     {
       feed: `at://${did}/app.bsky.feed.generator/${rkey}`,
@@ -26,7 +30,7 @@ const fetchFeed = async ({ agent, cursor, did, rkey, preferredLanguages }:UseFee
 };
 
 const useFeed = ({ did, rkey, agent, cursor, preferredLanguages }:UseFeedProps) => {
-  return useQuery(['feed', did, rkey, cursor], () => fetchFeed({ agent, did, rkey, cursor, preferredLanguages  }), {
+  return useQuery(fetchFeedQueryKeys({did,rkey,cursor,preferredLanguages}), () => fetchFeed({ agent, did, rkey, cursor, preferredLanguages  }), {
     keepPreviousData: true,
   });
 };

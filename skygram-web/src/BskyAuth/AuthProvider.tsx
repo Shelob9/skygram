@@ -33,7 +33,6 @@ export const AuthProvider = ({
       collection: 'app.bsky.actor.profile',
       rkey: 'self',
     })
-    console.log(profile)
     setProfile(profile.data)
   }, [oauthAgent, setProfile])
 

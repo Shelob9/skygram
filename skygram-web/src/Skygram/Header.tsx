@@ -93,7 +93,7 @@ export default function Header({
               </a>
               <Bluesky
                 href="https://bsky.app/profile/skygram.app"
-                className="hover:scale-110 h-6 w-6 cursor-pointer hover:scale-125 transition-transform duration-200 ease-out hidden md:inline-flex"
+                className="text-blue hover:scale-110 h-6 w-6 cursor-pointer hover:scale-125 transition-transform duration-200 ease-out hidden md:inline-flex"
               />
             </div>
           </div>
