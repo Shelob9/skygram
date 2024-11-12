@@ -1,3 +1,5 @@
+import { useState, useEffect } from 'react';
+
 const useStoredState = <Data>(key: string, defaultValue: Data) => {
     const [data, setData] = useState<Data>(() => {
         let currentValue;
@@ -28,7 +30,12 @@ const useStoredState = <Data>(key: string, defaultValue: Data) => {
         return data[itemKey as keyof Data];
     };
 
-    return { data, setData, setDataKey, getDataKey };
+    const deleteDataKey = (itemKey: string) => {
+        const { [itemKey]: _, ...newData } = data;
+        setData(newData as Data);
+    };
+
+    return { data, setData, setDataKey, getDataKey, deleteDataKey };
 };
 
 export default useStoredState;
