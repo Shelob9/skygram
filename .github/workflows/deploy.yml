@@ -51,16 +51,21 @@ jobs:
       working-directory: skygram-web
       run: bun run build
 
-    - name: Deploy to Cloudflare
-      working-directory: skygram-web
-      run: |
-        if [ "${{ github.ref_name }}" = "main" ]; then
-          npx wrangler deploy --assets ./dist --name skygram-web --compatibility-date 2024-11-04
-        else
-          npx wrangler deploy --assets ./dist --name skygram-web-${{ github.ref_name }} --compatibility-date 2024-11-04
-        fi
-      env:
-        CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+    - name: Deploy Main
+      if: github.ref == 'refs/heads/main'
+      uses: cloudflare/wrangler-action@v3
+      with:
+          apiToken: ${{ secrets.CF_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy dist --name=skygram-web --compatibility-date 2024-11-04
+
+    - name: Deploy Not Main
+      if: github.ref != 'refs/heads/main'
+      uses: cloudflare/wrangler-action@v3
+      with:
+          apiToken: ${{ secrets.CF_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy dist --name=skygram-web-${{ github.ref_name }} --compatibility-date 2024-11-04
 
     - name: Purge cache
       if: github.ref == 'refs/heads/main'
