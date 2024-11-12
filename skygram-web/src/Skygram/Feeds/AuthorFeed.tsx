@@ -1,8 +1,9 @@
-import React from 'react';
-import useAuthorFeed from 'path/to/hooks/useAuthorFeed'; // Update this import to the correct path
+import useAuthorFeed from './useAuthorFeed';
 
-const AuthorFeed = ({ actor }) => {
-  const { data, error, isLoading, isFetching, fetchNextPage } = useAuthorFeed({ actor });
+const AuthorFeed = ({ actor }:{
+  actor: string
+}) => {
+  const { data, error, isLoading, isFetching,  } = useAuthorFeed({ actor });
 
   if (isLoading) return <div>Loading...</div>;
   if (error) return <div>Error: {error.message}</div>;

@@ -1,6 +1,12 @@
-import { useQuery } from '@tanstack/react-query'
+import { Agent } from '@atproto/api';
+import { useQuery } from '@tanstack/react-query';
 
-const fetchAuthorFeed = async ({ actor, cursor, agent }) => {
+export type UseAuthorFeedProps = {
+  actor: string,
+  cursor?: string,
+  agent: Agent
+};
+const fetchAuthorFeed = async ({ actor, cursor, agent }:UseAuthorFeedProps) => {
   const { data } = await agent.getAuthorFeed({
     actor,
     filter: 'posts_with_media',
@@ -11,7 +17,7 @@ const fetchAuthorFeed = async ({ actor, cursor, agent }) => {
   return data;
 };
 
-const useAuthorFeed = ({ actor, cursor, agent }) => {
+const useAuthorFeed = ({ actor, cursor, agent }:UseAuthorFeedProps) => {
   return useQuery(['authorFeed', actor, cursor], () => fetchAuthorFeed({ actor, cursor, agent }), {
     keepPreviousData: true,
   });

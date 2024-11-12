@@ -11,6 +11,11 @@ async function getFeed({did, rkey, agent,cursor}:{did:string, rkey:string, agent
         limit: 30,
         cursor,
       },
+      {
+        headers: {
+          "Accept-Language": 'en-US,en',
+        },
+      }
     );
     return data
   } catch (error) {
@@ -75,9 +80,13 @@ export default function useFeed({did,rkey,agent}:{
 
     const {data} = useQuery({
       queryKey: [did,'app.bsky.feed.generator',rkey,cursor],
-      queryFn: () => getFeed({did,rkey,agent,cursor})
+      queryFn: () => getFeed({did,rkey,agent,cursor}).then((data) => {
+        if(data){
+          setNextCursor(data.cursor)
+        }
+        return data
+      })
     })
-    console.log({data,cursor})
 
     function getNext(){
       setCursor(nextCursor)
