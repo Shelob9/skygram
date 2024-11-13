@@ -1,11 +1,19 @@
 import feeds, { T_Feed } from "./feeds";
 
+function AsideSection({ title, children }: { title: string; children: React.ReactNode }) {
+
+    return(
+        <div className="mt-14 ml-10">
+            <h2 className="text-lg">{title}</h2>
+            {children}
+        </div>
+    )
+}
 export default function Aside({ currentFeed }: { currentFeed?: T_Feed }) {
     return (
         <aside className="hidden md:inline-grid md:col-span-1">
             <div className="fixed w-[380px]">
-                <div className="mt-14 ml-10">
-                    <h2 className="text-lg">Feeds Used</h2>
+                <AsideSection title="Feeds Used">
                     <ul className="mt-4">
                         {feeds.map((feed) => {
                             const isActive = currentFeed && feed.rkey === currentFeed.rkey;
@@ -35,7 +43,7 @@ export default function Aside({ currentFeed }: { currentFeed?: T_Feed }) {
                             );
                         })}
                     </ul>
-                </div>
+                </AsideSection>
             </div>
             {import.meta.env.MODE === "development" && (
                 <div className="hidden">
