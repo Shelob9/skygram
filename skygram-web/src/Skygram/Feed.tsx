@@ -1,26 +1,141 @@
-import { Agent } from "@atproto/api";
-import { LoaderCircle } from "lucide-react";
-import { Fragment } from "react";
+import { AppBskyFeedDefs } from "@atproto/api";
+import { useInfiniteQuery } from "@tanstack/react-query";
+import { useVirtualizer } from "@tanstack/react-virtual";
+import { LoaderCircleIcon } from "lucide-react";
+import { Fragment, useEffect, useMemo, useRef } from "react";
+import { useApi } from "../ApiProvider/useApi";
+import Centered from "../components/Centered";
+import { T_Feed } from "./feeds";
+import { fetchFeed, fetchFeedQueryKeys } from "./Feeds/useFeed";
+import usePosts from "./Feeds/usePosts";
 import Post from "./Post";
-import useFeed from "./useFeed";
-export default function Feed({did,rkey,agent}:{
-    did:string,
-    rkey:string,
-    agent: Agent
+
+
+function FeedPost({index,getPreparedPost}:{
+    index:number,
+    getPreparedPost:(index:number) => AppBskyFeedDefs.FeedViewPost | null
 }) {
-    const {postIndexes,getPost } = useFeed({did,rkey,agent})
-    return (
+    const post = getPreparedPost(index)
+    if(!post){
+        return null
+    }
+    // @ts-ignore
+    return <Post {...post}/>
+}
+
+export default function Feed({currentFeed}:{
+    currentFeed: T_Feed
+}) {
+    const {did,rkey} = currentFeed
+    const {agent,preferredLanguages} = useApi()
+
+    const {
+        status,
+        data,
+        error,
+        isFetching,
+        isFetchingNextPage,
+        fetchNextPage,
+        hasNextPage,
+      } = useInfiniteQuery({
+        queryKey: fetchFeedQueryKeys({did,rkey,cursor:undefined,preferredLanguages}),
+        //@ts-ignore
+        queryFn: async (ctx) => {
+            return fetchFeed({ agent, cursor:ctx.pageParam, did, rkey, preferredLanguages} ).then(
+                (data:{cursor?:string,feed:AppBskyFeedDefs.FeedViewPost[]}) => {
+                   return data;
+                }
+            )
+        },
+        getNextPageParam: (lastGroup) => lastGroup.cursor,
+        initialPageParam: undefined,
+    })
+    const flatData = useMemo<AppBskyFeedDefs.FeedViewPost[]>(() => {
+        // @ts-ignore
+        return data ? data.pages.flatMap((page:{cursor?:string,feed:AppBskyFeedDefs.FeedViewPost[]}) => page.feed) : [];
+    }, [data])
+    const {getPreparedPost} = usePosts({posts:flatData});
+    const parentRef = useRef<HTMLDivElement>(null)
+    const rowVirtualizer = useVirtualizer({
+        count: hasNextPage ? flatData.length + 1 : flatData.length,
+        getScrollElement: () => parentRef.current,
+        estimateSize: () => 100,
+        overscan: 5,
+
+    })
+    useEffect(() => {
+        const [lastItem] = [...rowVirtualizer.getVirtualItems()].reverse()
+
+        if (!lastItem) {
+          return
+        }
+
+        if (
+          lastItem.index >= flatData.length - 1 &&
+          hasNextPage &&
+          !isFetchingNextPage
+        ) {
+          fetchNextPage()
+        }
+      }, [hasNextPage, fetchNextPage, isFetchingNextPage, rowVirtualizer, flatData.length])
+
+
+    if('error' === status){
+        return <span>Error: {error.message}</span>
+    }
+    return(
         <>
-        {postIndexes && postIndexes.length ? postIndexes.map((postIndex)=>{
-          const post = getPost(parseInt(postIndex));
-          return (
-            <Fragment key={postIndex}>
-              {post ? <Post {...post}/> :null}
-            </Fragment>
-          )
-        }):<LoaderCircle
-          className="animate-spin h-5 w-5 mr-3 ..."
-        />}
-      </>
+            <div
+                ref={parentRef}
+            >
+                <div
+                    style={{
+                        height: `${rowVirtualizer.getTotalSize()}px`,
+                    }}
+                >
+                    {rowVirtualizer.getVirtualItems().map((virtualRow) => {
+                        const isLoaderRow = virtualRow.index > flatData.length - 1
+
+                        return (
+                            <div
+                                key={virtualRow.index}
+                            >
+                            {isLoaderRow
+                                ? hasNextPage
+                                ? (
+                                    <Centered>
+                                        <button
+                                            className="bg-blue text-white text-2xl rounded p-2 px-4  items-center"
+                                            disabled={isFetching}
+                                            onClick={()=>{
+                                                fetchNextPage()
+                                            }}>
+                                            {isFetching ?(
+                                                <LoaderCircleIcon
+                                                    className="h-6 w-6 animate-spin"
+                                                />
+
+                                            ):'Load More'}
+                                        </button>
+                                    </Centered>
+                                )
+                                : <Centered>
+                                    <div className="text-2xl">Done</div>
+                                  </Centered>
+                                : <>
+                                    <Fragment key={virtualRow.index}>
+                                        <FeedPost
+                                            index={virtualRow.index}
+                                            getPreparedPost={getPreparedPost}
+                                        />
+                                    </Fragment>
+                                </>}
+                            </div>
+                    )
+                    })}
+                </div>
+            </div>
+        </>
     )
+
 }

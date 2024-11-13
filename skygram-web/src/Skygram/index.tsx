@@ -1,4 +1,3 @@
-import { Agent } from "@atproto/api";
 import { useState } from "react";
 import Aside from "./Aside";
 import Feed from "./Feed";
@@ -11,10 +10,7 @@ export type User = {
   avatar: string;
   id: string;
 }
-const agent = new Agent({
-  service:
-    "https://api.bsky.app",
-});
+
 
 
 export default function Skygram() {
@@ -33,14 +29,10 @@ export default function Skygram() {
           currentFeed={currentFeed}
           setCurrentFeed={setCurrentFeed}
         />
-
-        {/** <!-- Feed --> */}
         <main className="grid grid-cols-1 md:grid-cols-3 mx-auto md:max-w-6xl">
           <section className="md:col-span-2">
             <Feed
-              agent={agent}
-              did={currentFeed.did}
-              rkey={currentFeed.rkey}
+              currentFeed={currentFeed}
             />
           </section>
           <Aside

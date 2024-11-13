@@ -1,5 +1,7 @@
 import { AppBskyActorDefs, AppBskyEmbedDefs } from "@atproto/api";
 import { HeartIcon, QuoteIcon } from "lucide-react";
+import Image from "./Image";
+import Images from "./Images";
 
 function PostAuthorLink({handle,children,className}:{
   handle: string;
@@ -151,7 +153,6 @@ export default function Post(props:PostProps){
   const {
     postImages,
     id,
-    url,
   } = props;
   return (
       <>
@@ -160,15 +161,21 @@ export default function Post(props:PostProps){
           className="border my-7 bg-white rounded-md"
         >
           <PostHeader {...props} />
-          <PostLink
-              url={url}
-          >
-            <img
-              className="w-full object-cover"
-              src={postImages[0].fullsize}
-              alt={postImages[0].alt}
-            />
-          </PostLink>
+          <>
+            {1 === postImages.length ? (
+              <Image
+                src={postImages[0].fullsize}
+                alt={postImages[0].alt}
+              />
+            ):(
+              <Images
+                images={postImages.map((image)=>({
+                  src: image.fullsize,
+                  alt: image.alt,
+                }))}
+              />
+            )}
+          </>
           <PostButtons {...props} />
           <PostCaption {...props} />
         </div>
