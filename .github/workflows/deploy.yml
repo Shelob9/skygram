@@ -28,6 +28,7 @@ jobs:
         bun run deploy
       env:
         CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+        CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
   deploy_web:
     runs-on: ubuntu-latest
     env:
