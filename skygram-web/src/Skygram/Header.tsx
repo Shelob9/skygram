@@ -82,12 +82,12 @@ export default function Header({
             {/** <!-- Right --> */}
             <div className="flex space-x-4 items-center">
               <Github
-                className="hover:scale-110 h-6 w-6 cursor-pointer hover:scale-125 transition-transform duration-200 ease-out hidden md:inline-flex"
-
+                className="hover:scale-110 h-6 w-6 cursor-pointer hover:scale-125 transition-transform duration-200 ease-out inline-flex"
+                href="https://github.com/shelob9/skygram"
               />
               <Bluesky
                 href="https://bsky.app/profile/skygram.app"
-                className="text-blue hover:scale-110 h-6 w-6 cursor-pointer hover:scale-125 transition-transform duration-200 ease-out hidden md:inline-flex"
+                className="border-blue hover:scale-110 h-6 w-6 cursor-pointer hover:scale-125 transition-transform duration-200 ease-out inline-flex"
               />
             </div>
           </div>
