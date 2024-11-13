@@ -2,6 +2,7 @@
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from '@headlessui/react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useState } from 'react';
+import Image from './Image';
 
 const Images = ({images}:{
   images: {
@@ -45,9 +46,8 @@ const Images = ({images}:{
             style={{
               backfaceVisibility: 'hidden'
             }}>
-            <img
+            <Image
               src={image.src}
-              className="block w-full"
               alt={image.alt} />
           </TabPanel>
         ))}

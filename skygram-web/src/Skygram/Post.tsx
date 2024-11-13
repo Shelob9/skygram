@@ -1,6 +1,7 @@
 import { AppBskyActorDefs, AppBskyEmbedDefs } from "@atproto/api";
 import { HeartIcon, QuoteIcon } from "lucide-react";
-import Images from "../components/Images";
+import Image from "./Image";
+import Images from "./Images";
 
 function PostAuthorLink({handle,children,className}:{
   handle: string;
@@ -162,8 +163,7 @@ export default function Post(props:PostProps){
           <PostHeader {...props} />
           <>
             {1 === postImages.length ? (
-              <img
-                className="w-full object-cover"
+              <Image
                 src={postImages[0].fullsize}
                 alt={postImages[0].alt}
               />
