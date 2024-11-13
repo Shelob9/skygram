@@ -5,7 +5,7 @@ import { LoaderCircleIcon } from "lucide-react";
 import { Fragment, useEffect, useMemo, useRef } from "react";
 import { useApi } from "../ApiProvider/useApi";
 import Centered from "../components/Centered";
-import { T_Feed } from "./feeds";
+import feeds, { T_Feed } from "./feeds";
 import { fetchFeed, fetchFeedQueryKeys } from "./Feeds/useFeed";
 import usePosts from "./Feeds/usePosts";
 import Post from "./Post";
@@ -23,10 +23,11 @@ function FeedPost({index,getPreparedPost}:{
     return <Post {...post}/>
 }
 
-export default function Feed({currentFeed}:{
-    currentFeed: T_Feed
-}) {
-    const {did,rkey} = currentFeed
+export default function Feed() {
+    const {currentFeed} = useApi()
+    const {did,rkey} = useMemo<T_Feed>(() => {
+        return feeds.find((feed) => feed.did === currentFeed) || feeds[0]
+    },[currentFeed])
     const {agent,preferredLanguages} = useApi()
 
     const {

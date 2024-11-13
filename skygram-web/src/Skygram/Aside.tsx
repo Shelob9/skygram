@@ -1,4 +1,5 @@
-import feeds, { T_Feed } from "./feeds";
+import { useApi } from "../ApiProvider/useApi";
+import feeds from "./feeds";
 
 function AsideSection({ title, children }: { title: string; children: React.ReactNode }) {
 
@@ -9,7 +10,8 @@ function AsideSection({ title, children }: { title: string; children: React.Reac
         </div>
     )
 }
-export default function Aside({ currentFeed }: { currentFeed?: T_Feed }) {
+export default function Aside() {
+    const {currentFeed} = useApi();
     return (
         <aside className="hidden md:inline-grid md:col-span-1">
             <div className="fixed w-[380px]">

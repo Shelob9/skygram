@@ -1,8 +1,9 @@
 import { SearchIcon } from "lucide-react";
-import { User } from ".";
+import { useCallback, useMemo } from "react";
+import { useApi } from "../ApiProvider/useApi";
 import Bluesky from "../components/Bluesky";
 import Github from "../components/Github";
-import { T_Feed } from './feeds';
+import feeds, { T_Feed } from './feeds';
 import FeedSelector from './Feeds/FeedSelector';
 
 const logo : {
@@ -16,7 +17,7 @@ const logo : {
 
 
 type HeaderProps = {
-    loggedInUser: User,
+    //loggedInUser: User,
     currentFeed: T_Feed,
     setCurrentFeed: (feed:T_Feed) => void
 }
@@ -36,61 +37,65 @@ function UserAvatar(
 }
 
 
-export default function Header({
-    //@ts-ignore
-    loggedInUser,
+export default function Header() {
+  const {
     currentFeed,
     setCurrentFeed,
-}:HeaderProps) {
+  } = useApi();
 
-    return (
-        <div className="sticky top-0 border-b shadow-sm bg-white z-30">
-          {/** <!-- Header --> */}
+  const feed = useMemo<T_Feed>(() => {
+    return feeds.find((f) => f.did === currentFeed) || feeds[0];
+  }, [currentFeed]);
+  const setFeed = useCallback((feed: T_Feed) => setCurrentFeed(feed.did), [setCurrentFeed]);
 
-          <div
-            className="flex justify-between h-24 items-center mx-4 xl:max-w-6xl xl:mx-auto"
-          >
-            {/** <!-- Left  --> */}
+  return (
+      <div className="sticky top-0 border-b shadow-sm bg-white z-30">
+        {/** <!-- Header --> */}
+
+        <div
+          className="flex justify-between h-24 items-center mx-4 xl:max-w-6xl xl:mx-auto"
+        >
+          {/** <!-- Left  --> */}
 
 
-            <div className="cursor-pointer w-24 inline-grid">
-              <img
-                className="h-10 rounded-full cursor-pointer w-10 rounded-full"
-                    src={logo.src}
-                    alt={logo.alt}
-                />
+          <div className="cursor-pointer w-24 inline-grid">
+            <img
+              className="h-10 rounded-full cursor-pointer w-10 rounded-full"
+                  src={logo.src}
+                  alt={logo.alt}
+              />
+          </div>
+          <div className="cursor-pointer w-24 inline-grid ">
+            <h1
+              className="hidden md:inline text-2xl font-bold"
+            >Skygram</h1>
+          </div>
+
+          {/** <!-- Middle --> */}
+
+          <div className="relative mt-1">
+            <div className="absolute top-2 left-2"
+              style={{visibility:'hidden'}}
+            >
+              <SearchIcon />
             </div>
-            <div className="cursor-pointer w-24 inline-grid ">
-              <h1
-                className="hidden md:inline text-2xl font-bold"
-              >Skygram</h1>
-            </div>
-
-            {/** <!-- Middle --> */}
-
-            <div className="relative mt-1">
-              <div className="absolute top-2 left-2"
-                style={{visibility:'hidden'}}
-              >
-                <SearchIcon />
-              </div>
-              <FeedSelector
-                currentFeed={currentFeed}
-                onChangeFeed={setCurrentFeed}
+            <FeedSelector
+              currentFeed={feed}
+              onChangeFeed={setFeed}
             />
-            </div>
-            {/** <!-- Right --> */}
-            <div className="flex space-x-4 items-center">
-              <Github
-                className="hover:scale-110 h-6 w-6 cursor-pointer hover:scale-125 transition-transform duration-200 ease-out inline-flex"
-                href="https://github.com/shelob9/skygram"
-              />
-              <Bluesky
-                href="https://bsky.app/profile/skygram.app"
-                className="border-blue hover:scale-110 h-6 w-6 cursor-pointer hover:scale-125 transition-transform duration-200 ease-out inline-flex"
-              />
-            </div>
+          </div>
+          {/** <!-- Right --> */}
+          <div className="flex space-x-4 items-center">
+            <Github
+              className="hover:scale-110 h-6 w-6 cursor-pointer hover:scale-125 transition-transform duration-200 ease-out inline-flex"
+              href="https://github.com/shelob9/skygram"
+            />
+            <Bluesky
+              href="https://bsky.app/profile/skygram.app"
+              className="border-blue hover:scale-110 h-6 w-6 cursor-pointer hover:scale-125 transition-transform duration-200 ease-out inline-flex"
+            />
           </div>
         </div>
-    )
+      </div>
+  )
 }

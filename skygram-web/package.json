@@ -11,7 +11,7 @@
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",
     "preview": "vite preview",
-    "deploy":"bunx wrangler deploy  --assets ./dist --name skygram-web --compatibility-date 2024-11-04"
+    "deploy": "bunx wrangler deploy  --assets ./dist --name skygram-web --compatibility-date 2024-11-04"
   },
   "dependencies": {
     "@atproto/api": "^0.13.14",
@@ -22,6 +22,8 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.9.0",
+    "@tanstack/router-devtools": "^1.81.5",
+    "@tanstack/router-plugin": "^1.79.0",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
     "@vitejs/plugin-react-swc": "^3.5.0",
