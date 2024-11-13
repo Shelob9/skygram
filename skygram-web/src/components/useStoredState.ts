@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 const useStoredState = <Data>(key: string, defaultValue: Data) => {
     const [data, setData] = useState<Data>(() => {
@@ -8,7 +8,8 @@ const useStoredState = <Data>(key: string, defaultValue: Data) => {
             currentValue = JSON.parse(
                 localStorage.getItem(key) || String(defaultValue),
             );
-        } catch (error) {
+        } catch (error:unknown) {
+            console.log({error})
             currentValue = defaultValue;
         }
 

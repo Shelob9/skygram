@@ -1,13 +1,17 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { Agent } from '@atproto/api';
+import { useMutation, } from '@tanstack/react-query';
 
-const usePostInteractions = ({ cid, uri, agent }) => {
+const usePostInteractions = ({ cid, uri, agent }:{
+  cid: string;
+  uri: string;
+  agent:Agent;
+}) => {
   const queryClient = useQueryClient();
-
   const likeMutation = useMutation(
     () => agent.like(uri, cid),
     {
       onSuccess: () => {
-       // queryClient.invalidateQueries(['postInteractions', uri, cid]);
+        queryClient.invalidateQueries(['postInteractions', uri, cid]);
       },
     }
   );
@@ -16,7 +20,7 @@ const usePostInteractions = ({ cid, uri, agent }) => {
     () => agent.deleteRepost(uri),
     {
       onSuccess: () => {
-       // queryClient.invalidateQueries(['postInteractions', uri, cid]);
+        queryClient.invalidateQueries(['postInteractions', uri, cid]);
       },
     }
   );
@@ -25,7 +29,7 @@ const usePostInteractions = ({ cid, uri, agent }) => {
     () => agent.repost(uri, cid),
     {
       onSuccess: () => {
-        //queryClient.invalidateQueries(['postInteractions', uri, cid]);
+        queryClient.invalidateQueries(['postInteractions', uri, cid]);
       },
     }
   );
