@@ -39,7 +39,6 @@ export default function FeedView({
         data,
         error,
         isFetching,
-        isFetchingNextPage,
         fetchNextPage,
         hasNextPage,
       } = useInfiniteQuery({
