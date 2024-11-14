@@ -10,7 +10,7 @@ export type UseFeedProps = {
   limit?: number
 };
 
-export const fetchFeedQueryKeys = ({ did, rkey, cursor,limit,preferredLanguages }:Omit<UseFeedProps,'agent'>) =>
+export const fetchFeedQueryKeys = ({ did, rkey, cursor,limit,preferredLanguages }:Omit<UseFeedProps,'agent'>) : Array<string|object> =>
   [ did, 'app.bsky.feed.generator', rkey, {cursor,preferredLanguages,limit:limit || 30}];
 export const fetchFeed = async ({ agent, cursor, did, rkey, preferredLanguages }:UseFeedProps) => {
   const { data } = await agent.app.bsky.feed.getFeed(

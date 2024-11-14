@@ -8,7 +8,6 @@ const preparedPost = (index:number,posts:AppBskyFeedDefs.FeedViewPost[]) => {
     }
     const embed = post.post.embed;
     const images = embed.images;
-    console.log(images)
     if(!Array.isArray(images)){
         return null;
     }
