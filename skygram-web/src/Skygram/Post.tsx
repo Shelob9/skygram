@@ -1,8 +1,8 @@
 import { AppBskyActorDefs, AppBskyEmbedDefs } from "@atproto/api";
 import { HeartIcon, QuoteIcon } from "lucide-react";
-import sanitizeHtml from 'sanitize-html';
 import Image from "./Image";
 import Images from "./Images";
+import sanitizer from "./sanitizer";
 
 function PostAuthorLink({handle,children,className}:{
   handle: string;
@@ -74,14 +74,6 @@ function PostButtons({url}:PostProps){
     </div>
   )
 }
-
-const sanitizer = (input:string) => sanitizeHtml(input, {
-  allowedTags: [ 'b', 'i', 'em', 'strong', 'a' ],
-  allowedAttributes: {
-    'a': [ 'href' ]
-  },
-  allowedIframeHostnames: ['www.youtube.com']
-});
 
 function PostCaption({
   username,

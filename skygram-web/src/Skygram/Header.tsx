@@ -1,3 +1,4 @@
+import { Link, useLocation } from '@tanstack/react-router';
 import { SearchIcon } from "lucide-react";
 import { useCallback, useMemo } from "react";
 import { useApi } from "../ApiProvider/useApi";
@@ -38,6 +39,9 @@ function UserAvatar(
 
 
 export default function Header() {
+  const pathname = useLocation({
+    select: (location) => location.pathname,
+  })
   const {
     currentFeed,
     setCurrentFeed,
@@ -56,19 +60,23 @@ export default function Header() {
           className="flex justify-between h-24 items-center mx-4 xl:max-w-6xl xl:mx-auto"
         >
           {/** <!-- Left  --> */}
-
-
           <div className="cursor-pointer w-24 inline-grid">
-            <img
-              className="h-10 rounded-full cursor-pointer w-10 rounded-full"
-                  src={logo.src}
-                  alt={logo.alt}
+            <Link to="/">
+              <img
+                className="h-10 rounded-full cursor-pointer w-10 rounded-full"
+                src={logo.src}
+                alt={logo.alt}
               />
+            </Link>
           </div>
           <div className="cursor-pointer w-24 inline-grid ">
-            <h1
-              className="hidden md:inline text-2xl font-bold"
-            >Skygram</h1>
+            <Link to="/">
+              <h1
+                className="hidden md:inline text-2xl font-bold"
+              >
+                Skygram
+              </h1>
+            </Link>
           </div>
 
           {/** <!-- Middle --> */}
@@ -79,10 +87,11 @@ export default function Header() {
             >
               <SearchIcon />
             </div>
+            {'/' === pathname ?(
             <FeedSelector
               currentFeed={feed}
               onChangeFeed={setFeed}
-            />
+            />):null}
           </div>
           {/** <!-- Right --> */}
           <div className="flex space-x-4 items-center">
