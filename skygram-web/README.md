@@ -1,6 +1,6 @@
 # UI For Skygram.app
 
-[https://skgram.app](https://skgram.app) front-endd source.
+[https://skygram.app](https://skygram.app) front-endd source.
 
 ## Development
 Run from root dir is better
