@@ -1,6 +1,7 @@
 import { Link, useLocation } from '@tanstack/react-router';
 import { SearchIcon } from "lucide-react";
 import { useCallback, useMemo } from "react";
+import LoginModal from '../ApiProvider/LoginModal';
 import { useApi } from "../ApiProvider/useApi";
 import Bluesky from "../components/Bluesky";
 import Github from "../components/Github";
@@ -103,6 +104,7 @@ export default function Header() {
               href="https://bsky.app/profile/skygram.app"
               className="border-blue hover:scale-110 h-6 w-6 cursor-pointer hover:scale-125 transition-transform duration-200 ease-out inline-flex"
             />
+            <LoginModal />
           </div>
         </div>
       </div>

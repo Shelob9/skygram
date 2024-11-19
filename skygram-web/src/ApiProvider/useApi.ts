@@ -6,5 +6,8 @@ export const useApi = () => {
     if (context === undefined) {
       throw new Error('useApi must be used within an ApiProvider');
     }
+
+
+
     return context;
   };

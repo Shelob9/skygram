@@ -32,6 +32,5 @@ export const fetchFeed = async ({ xrpc, cursor, did, rkey, preferredLanguages }:
     console.log({error})
     throw error;
   });
-  console.log({data});
   return data;
 };
