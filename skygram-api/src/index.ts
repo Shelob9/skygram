@@ -8,7 +8,7 @@ const xrpc = new XRPC({ handler: simpleFetchHandler({ service: 'https://api.bsky
 
 
 
-import feeds from './feeds';
+import feeds from './feedData';
 type Bindings = {
   baseUrl: string
 
