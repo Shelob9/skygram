@@ -1,3 +1,4 @@
+import { XRPC } from '@atcute/client';
 import { Agent } from '@atproto/api';
 import { createContext } from 'react';
 import feeds from '../Skygram/feeds';
@@ -7,6 +8,7 @@ export interface ApiContextType {
   preferredLanguages: string;
   currentFeed: string;
   setCurrentFeed: (feed: string) => void;
+  xrpc: XRPC;
 
 }
 

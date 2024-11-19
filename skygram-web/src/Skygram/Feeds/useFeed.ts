@@ -1,8 +1,9 @@
-import { Agent } from '@atproto/api';
-import { useQuery } from '@tanstack/react-query';
+import { XRPC } from '@atcute/client';
+import { AtUri } from '@atproto/api';
+
 
 export type UseFeedProps = {
-  agent: Agent,
+  xrpc: XRPC,
   cursor?: string,
   did: string,
   rkey: string,
@@ -12,27 +13,25 @@ export type UseFeedProps = {
 
 export const fetchFeedQueryKeys = ({ did, rkey, cursor,limit,preferredLanguages }:Omit<UseFeedProps,'agent'>) : Array<string|object> =>
   [ did, 'app.bsky.feed.generator', rkey, {cursor,preferredLanguages,limit:limit || 30}];
-export const fetchFeed = async ({ agent, cursor, did, rkey, preferredLanguages }:UseFeedProps) => {
-  const { data } = await agent.app.bsky.feed.getFeed(
-    {
-      feed: `at://${did}/app.bsky.feed.generator/${rkey}`,
+
+export const fetchFeed = async ({ xrpc, cursor, did, rkey, preferredLanguages }:UseFeedProps) => {
+  const {data} = await xrpc.get('app.bsky.feed.getFeed', {
+    params: {
+      feed: AtUri.make(
+        did,
+        'app.bsky.feed.generator',
+        rkey
+      ).toString(),
       limit: 30,
       cursor,
     },
-    {
-      headers: {
-        "Accept-Language": preferredLanguages,
-      },
-    }
-  );
-
+    headers: {
+      "Accept-Language": preferredLanguages,
+    },
+  }).catch((error) => {
+    console.log({error})
+    throw error;
+  });
+  console.log({data});
   return data;
 };
-
-const useFeed = ({ did, rkey, agent, cursor, preferredLanguages }:UseFeedProps) => {
-  return useQuery(fetchFeedQueryKeys({did,rkey,cursor,preferredLanguages}), () => fetchFeed({ agent, did, rkey, cursor, preferredLanguages  }), {
-    keepPreviousData: true,
-  });
-};
-
-export default useFeed;
