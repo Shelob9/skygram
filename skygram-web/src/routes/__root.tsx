@@ -7,6 +7,7 @@ import {
 } from '@tanstack/react-query';
 import { lazy } from 'react';
 import ApiProvider from '../ApiProvider';
+import { AuthProvider } from '../BskyAuth/AuthProvider';
 import Aside from '../Skygram/Aside';
 import Header from '../Skygram/Header';
 const agent = new Agent({
@@ -19,7 +20,19 @@ const TanStackRouterDevtools = import.meta.env.PROD  ? () => null: lazy(() =>
 );
 export const Route = createRootRoute({
   component: () => (
-    <ApiProvider agent={agent}>
+    <AuthProvider
+      onRestored={(session) => {
+        console.log('restored', session)
+      }}
+      onSignedIn={(session) => {
+        console.log('signed in', session)
+      }}
+      onSignedOut={() => {
+        console.log('signed out')
+      }}
+
+    >
+      <ApiProvider agent={agent}>
       <QueryClientProvider client={queryClient}>
         <>
           <Header />
@@ -35,5 +48,6 @@ export const Route = createRootRoute({
         <TanStackRouterDevtools />
     </QueryClientProvider>
     </ApiProvider>
+    </AuthProvider>
   ),
 })

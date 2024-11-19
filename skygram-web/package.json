@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "vite --port=5000",
     "check": "tsc -b",
-    "build": "vite build",
+    "build": "vite build  --mode production",
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",
     "preview": "vite preview",
@@ -15,7 +15,6 @@
   },
   "dependencies": {
     "@atproto/api": "^0.13.14",
-    "@atproto/oauth-client-browser": "^0.3.0",
     "@tanstack/react-virtual": "^3.10.8",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
