@@ -1,7 +1,7 @@
 import '@atcute/bluesky/lexicons';
 import { XRPC, simpleFetchHandler } from '@atcute/client';
 import { AtUri } from '@atproto/api';
-import { Hono } from 'hono';
+import { Hono, HonoRequest } from 'hono';
 import { cors } from 'hono/cors';
 
 const xrpc = new XRPC({ handler: simpleFetchHandler({ service: 'https://api.bsky.app' }) });
@@ -9,9 +9,16 @@ const xrpc = new XRPC({ handler: simpleFetchHandler({ service: 'https://api.bsky
 
 
 import feeds from './feeds';
+type Bindings = {
+  baseUrl: string
 
-const app = new Hono()
-const url = `https://skygram.app`
+}
+
+const app = new Hono<{ Bindings: Bindings }>()
+app.use('*', async (c, next) => {
+  c.env.baseUrl = new URL(c.req.url).origin;
+  return next()
+});
 const gardening = {
   did: `did:plc:5rw2on4i56btlcajojaxwcat`,
   rkey: `aaao6g552b33o`,
@@ -21,28 +28,25 @@ app.use('*', cors({
   origin: '*'
 }));
 
+
+
 app.get('/', (c) => {
   return c.html(`<h1>Not yet</h1>`)
 })
-app.get('/api', (c) => {
-  return c.json({
-    not:'yet',
-    oauth: `${url}/api/oauth.json`
-  })
-})
-
-
 
 
 
 app.get('/api/status', (c) => {
+  const baseUrl = c.env.baseUrl;
+
   return c.json({
     not:'yet',
-    oauth: `${url}/api/oauth.json`
+    oauth: `${baseUrl}/api/oauth.json`,
+    baseUrl: baseUrl,
   })
 })
 
-app.get('/api/atcute', async (c) => {
+app.get('/api/atcute/feed', async (c) => {
   const { data } = await xrpc.get('app.bsky.feed.getFeed', {
     params: {
       feed: AtUri.make(
@@ -55,7 +59,19 @@ app.get('/api/atcute', async (c) => {
   return c.json(data)
 })
 
+app.get('/api/atcute/search', async (c) => {
+  const {data } = await xrpc.get('app.bsky.feed.searchPosts', {
+    params: {
+      q: 'Good Morning',
+      limit: 10,
+      author: 'did:plc:payluere6eb3f6j5nbmo2cwy',
+    },
+  });
+  return c.json(data)
+});
+
 app.get('/api/oauth.json', (c) => {
+  const url = c.env.baseUrl;
   return c.json({
     "client_id": `${url}/api/oauth.json`,
     "client_name": "Skygram",
@@ -75,19 +91,37 @@ app.get('/api/oauth.json', (c) => {
 
 
 app.get('/api/feeds', (c) => {
+  const url  = c.env.baseUrl;
+
   return c.json({
     feeds:feeds.map(feed => {
       return {
         ...feed,
-        posts: `${url}/api/feeds/${feed.did}/${feed.rkey}`
+        posts: `${url}/api/feed/${feed.did}/${feed.rkey}`,
+        skeleton: `${url}/api/skeleton/${feed.did}/${feed.rkey}`
       }
     })
   })
 })
-app.get('/api/feeds/:did/:rkey', async(c) => {
-  const did = c.req.param('did');
-  const rkey = c.req.param('rkey');
+
+const parseFeedArgs = (req:HonoRequest) => {
+  const did = req.param('did');
+  const rkey = req.param('rkey');
   const feed = feeds.find(f => f.did === did && f.rkey === rkey);
+  const cursor = req.query('cursor');
+  const limit = req.query('limit');
+
+  return {
+    did,
+    rkey,
+    feed,
+    cursor,
+    limit
+  }
+}
+app.get('/api/feed/:did/:rkey', async(c) => {
+  const {did,rkey,feed,cursor,limit} = parseFeedArgs(c.req);
+
   if(!feed){
     return c.json({error:'feed not found',rkey,did},400)
   }
@@ -99,12 +133,43 @@ app.get('/api/feeds/:did/:rkey', async(c) => {
           'app.bsky.feed.generator',
           feed.rkey
         ).toString(),
+        limit: limit ? parseInt(limit) : 30,
+        cursor,
       },
     });
     return c.json(data);
   } catch (error) {
     console.log({error})
     return c.json({error:error??'error',feed},500)
+  }
+});
+
+app.get('/api/skeleton/:did/:rkey', async(c) => {
+  const {did,rkey,feed,cursor,limit} = parseFeedArgs(c.req);
+
+  if(!feed){
+    return c.json({error:'feed not found',rkey,did},400)
+  }
+  try {
+    const { data } = await xrpc.get('app.bsky.feed.getFeedSkeleton', {
+      params: {
+        feed: AtUri.make(
+          'did:plc:5rw2on4i56btlcajojaxwcat',
+          'app.bsky.feed.generator',
+          'aaao6g552b33o'
+        ).toString(),
+        limit: limit ? parseInt(limit) : 30,
+        cursor,
+      },
+    });
+    return c.json(data);
+  } catch (error) {
+    console.log({error})
+    return c.json({error:error??'error',feed: AtUri.make(
+      'did:plc:5rw2on4i56btlcajojaxwcat',
+          'app.bsky.feed.generator',
+          'aaao6g552b33o'
+    ).toString(),},500)
   }
 });
 
