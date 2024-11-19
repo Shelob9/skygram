@@ -1,17 +1,22 @@
-import { Agent } from '@atproto/api';
+import '@atcute/bluesky/lexicons';
+import { XRPC, simpleFetchHandler } from '@atcute/client';
+import { AtUri } from '@atproto/api';
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
-import feeds, { getFeedPosts } from './feeds';
+
+const xrpc = new XRPC({ handler: simpleFetchHandler({ service: 'https://api.bsky.app' }) });
+
+
+
+import feeds from './feeds';
 
 const app = new Hono()
 const url = `https://skygram.app`
-
-function makeAgent(){
-  const agent = new Agent({
-    service: 'https://api.bsky.app'
-  })
-  return agent;
+const gardening = {
+  did: `did:plc:5rw2on4i56btlcajojaxwcat`,
+  rkey: `aaao6g552b33o`,
 }
+
 app.use('*', cors({
   origin: '*'
 }));
@@ -35,6 +40,19 @@ app.get('/api/status', (c) => {
     not:'yet',
     oauth: `${url}/api/oauth.json`
   })
+})
+
+app.get('/api/atcute', async (c) => {
+  const { data } = await xrpc.get('app.bsky.feed.getFeed', {
+    params: {
+      feed: AtUri.make(
+        gardening.did,
+        'app.bsky.feed.generator',
+        gardening.rkey
+      ).toString(),
+    },
+  });
+  return c.json(data)
 })
 
 app.get('/api/oauth.json', (c) => {
@@ -61,39 +79,35 @@ app.get('/api/feeds', (c) => {
     feeds:feeds.map(feed => {
       return {
         ...feed,
-        posts: `${url}/api/posts?did=${feed.did}&rkey=${feed.rkey}`
+        posts: `${url}/api/feeds/${feed.did}/${feed.rkey}`
       }
     })
   })
 })
-app.get('/api/posts', async(c) => {
-  const did = c.req.query('did');
-  const rkey = c.req.query('rkey');
-  const feed = ! did && !rkey ? feeds[0] : feeds.find(f => f.did === did && f.rkey === rkey);
-  if(!feed ){
+app.get('/api/feeds/:did/:rkey', async(c) => {
+  const did = c.req.param('did');
+  const rkey = c.req.param('rkey');
+  const feed = feeds.find(f => f.did === did && f.rkey === rkey);
+  if(!feed){
     return c.json({error:'feed not found',rkey,did},400)
   }
-
-  const gardening = {
-    did: `did:plc:5rw2on4i56btlcajojaxwcat`,
-    rkey: `aaao6g552b33o`,
-  }
-
-  const agent = makeAgent();
   try {
-    const data = await getFeedPosts(feed,agent);
-
-    const posts = data.feed;
-    const nextCursor = data.cursor;
-    return c.json({nextCursor,posts,feed:{
-      rkey,did
-    }})
+    const { data } = await xrpc.get('app.bsky.feed.getFeed', {
+      params: {
+        feed: AtUri.make(
+          feed.did,
+          'app.bsky.feed.generator',
+          feed.rkey
+        ).toString(),
+      },
+    });
+    return c.json(data);
   } catch (error) {
-      console.error({error,feed})
-      return c.json({error,feed,at:`at://${feed.did}/app.bsky.feed.generator/${feed.rkey}`})
-
+    console.log({error})
+    return c.json({error:error??'error',feed},500)
   }
 });
+
 
 
 export default app
