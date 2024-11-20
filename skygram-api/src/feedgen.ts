@@ -31,12 +31,20 @@ app.get('/', (c) => {
 app.get('/user/did/word', async (c) => {
   const {data } = await xrpc.get('app.bsky.feed.searchPosts', {
     params: {
-      q: 'Good Morning',
+      q: 'Good Morning +🌺',
       limit: 10,
       author: 'did:plc:payluere6eb3f6j5nbmo2cwy',
     },
   });
-  return c.json(data)
+  return c.json({
+    posts: data.posts.map(post => {
+      return {
+        uri: post.uri,
+        // @ts-ignore
+        text: post.record.text,
+      }
+    })
+  })
 });
 
 
@@ -81,6 +89,66 @@ app.get('/upstream/feed/:did/:rkey', async(c) => {
 });
 
 
+const josh = 'did:plc:payluere6eb3f6j5nbmo2cwy';
+const joshFeeds = {
+  gm: {
+    did: josh,
+    rKey: 'gm',
+    search: ['Good Morning'],
+  },
+  pinkFlower: {
+    did: josh,
+    rKey: 'pinkFlower',
+    search: ['🌺','🌸',''],
+  },
+  yellowFlower: {
+    did: josh,
+    rKey: 'yellowFlower',
+    search: ['🌻','🌼','☀️'],
+  },
+}
+
+app.get('/joshfeed/:rkey', async(c) => {
+  const {limit,cursor } = parseFeedArgs(c.req);
+  const rKey = c.req.param('rkey') as keyof typeof joshFeeds;
+  if(!joshFeeds[rKey]){
+    return c.json({error:'feed not found',rKey},400)
+  }
+  const {did,search} = joshFeeds[rKey];
+  const q = createLuceneQuery(search);
+  try {
+    const {data} = await xrpc.get('app.bsky.feed.searchPosts', {
+      params: {
+        q,
+        limit,
+        author: did,
+        cursor,
+      },
+    });
+    const response : AppBskyFeedGetFeedSkeleton.OutputSchema = {
+      feed: data.posts.map(post => {
+        return {
+          post: post.uri,
+          // @ts-ignore
+          text: post.record.text,
+        }
+      }),
+      cursor: data.cursor,
+    };
+    return c.json(response)
+  } catch (error) {
+    //@ts-ignore
+    return c.json({error:error.description,feed},500)
+  }
+
+});
+
+function createLuceneQuery(words: string[]) {
+  if(1 >= words.length) {
+    return words[0];
+  }
+  return words.map(word => `+${word}`).join(' ');
+}
 
 app.get('/:did/app.bsky.feed.getFeedSkeleton/:rkey', async(c) => {
     const feed : AppBskyFeedGetFeedSkeleton.OutputSchema = {
