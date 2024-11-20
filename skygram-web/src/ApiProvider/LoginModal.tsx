@@ -97,7 +97,7 @@ export default function LoginModal() {
                       help={error ? {isError:true, message:error} :undefined}
                     />
                   </div>
-                  <div className="mt-4 inline-flex items-center gap-2">
+                  <div className="my-4 inline-flex items-center gap-2">
                     <Button
                       className={buttonClassName}
                       onClick={onLogin}

@@ -5,6 +5,7 @@ import LoginModal from '../ApiProvider/LoginModal';
 import { useApi } from "../ApiProvider/useApi";
 import Bluesky from "../components/Bluesky";
 import Github from "../components/Github";
+import IfFlag from '../components/IfFlag';
 import feeds, { T_Feed } from './feeds';
 import FeedSelector from './Feeds/FeedSelector';
 
@@ -104,7 +105,9 @@ export default function Header() {
               href="https://bsky.app/profile/skygram.app"
               className="border-blue hover:scale-110 h-6 w-6 cursor-pointer hover:scale-125 transition-transform duration-200 ease-out inline-flex"
             />
-            <LoginModal />
+            <IfFlag cookie="__josh">
+              <LoginModal />
+            </IfFlag>
           </div>
         </div>
       </div>
