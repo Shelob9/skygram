@@ -46,6 +46,35 @@ app.get('/api/status', (c) => {
   })
 })
 
+app.get('/api/profile', async (c) => {
+  const handle = c.req.query('handle') || '@josh412.com';
+  try {
+    const {data } = await xrpc.get('app.bsky.actor.getProfile', {
+      params: {
+       handle
+      },
+    });
+    return c.json(data)
+  } catch (error) {
+    //@ts-ignore
+    return c.json({error:error.description},500)
+  }
+});
+app.get('/api/handle', async (c) => {
+  const handle = c.req.query('handle') || 'josh412.com';
+  try {
+    const { data } = await xrpc.get('com.atproto.identity.resolveHandle', {
+      params: {
+        handle,
+      },
+    });
+    return c.json(data)
+  } catch (error) {
+    return c.json({error:error.description},500)
+  }
+});
+
+
 app.get('/api/atcute/feed', async (c) => {
   const { data } = await xrpc.get('app.bsky.feed.getFeed', {
     params: {

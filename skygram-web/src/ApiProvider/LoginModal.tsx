@@ -1,12 +1,23 @@
-import { createAuthorizationUrl, resolveFromIdentity } from '@atcute/oauth-browser-client';
+import { configureOAuth, createAuthorizationUrl, resolveFromIdentity } from '@atcute/oauth-browser-client';
 import { Button, Dialog, DialogPanel, DialogTitle } from '@headlessui/react';
-import { useState } from 'react';
+import clsx from 'clsx';
+import { LoaderCircleIcon } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import InputField from '../components/Form/InputField';
 
+const buttonClassName = clsx(
+  "hover:scale-105 transition-transform duration-200 ease-out",
+  "border-black border-2 rounded-md",
+  "py-2 px-4",
+   "focus:outline-none  data-[focus]:outline-1 data-[focus]:outline-white",
+   "text-sm font-medium text-black data-[hover]:text-black"
+);
 export default function LoginModal() {
     const [isOpen, setIsOpen] = useState(false)
     const [username, setUsername] = useState('')
     const [error, setError] = useState('')
+    const [isLoading, setIsLoading] = useState(false)
+
     function open() {
         setIsOpen(true)
     }
@@ -16,29 +27,48 @@ export default function LoginModal() {
     }
 
     function onLogin() {
-        resolveFromIdentity(username)
-          .then(({ identity, metadata }) => {
-            console.log({ identity, metadata });
-            createAuthorizationUrl({
-                metadata: metadata,
-                identity: identity,
-                scope: 'atproto transition:generic transition:chat.bsky',
-            }).then((authUrl) => {
-                setTimeout(() => {
-                    window.location.assign(authUrl);
-                }, 200);
-            }).catch((error) => {
-                console.log({ error });
-                setError(error.message);
-            });
-        });
+      setIsLoading(true)
+      resolveFromIdentity(username.replace('@', ''))
+        .then(({ identity, metadata }) => {
+          console.log({ identity, metadata });
+          createAuthorizationUrl({
+              metadata: metadata,
+              identity: identity,
+              scope: 'atproto transition:generic transition:chat.bsky',
+          }).then((authUrl) => {
+              setTimeout(() => {
+                  window.location.assign(authUrl);
+              }, 2000);
+          }).catch((error) => {
+              console.error(error);
+              setError(error.message);
+
+          }).finally(() => {
+              setIsLoading(false);
+          });
+      });
     }
+
+    useEffect(() => {
+      configureOAuth({
+        metadata: {
+          client_id: 'https://skygram.app/api/oauth.json',
+          redirect_uri: 'https://skygram.app',
+        },
+      });
+    },[]);
+
+    useEffect(() => {
+      if( ! username || ! username.length) {
+        setError('')
+      }
+    },[username])
 
     return (
         <>
           <Button
             onClick={open}
-            className="rounded-md bg-black py-2 px-4 text-sm font-medium text-white focus:outline-none data-[hover]:bg-black/30 data-[hover]:text-black data-[focus]:outline-1 data-[focus]:outline-white"
+            className={buttonClassName}
           >
             Click To Login
           </Button>
@@ -48,27 +78,31 @@ export default function LoginModal() {
               <div className="flex min-h-full items-center justify-center p-4">
                 <DialogPanel
                   transition
-                  className="flex flex-col items-center justify-center w-full max-w-md rounded-xl bg-black backdrop-blur-2xl duration-300 ease-out data-[closed]:transform-[scale(95%)] data-[closed]:opacity-0"
+                  className={clsx(
+                    {
+                      "animate-pulse": isLoading,
+                    },
+                    "border-black border-2 rounded-md",
+                    "flex flex-col items-center justify-center w-full max-w-md rounded-xl bg-white duration-300 ease-out data-[closed]:transform-[scale(95%)] data-[closed]:opacity-0"
+                  )}
                 >
-                  <DialogTitle as="h3" className="text-base/7 font-medium text-white">
-                  {error ? <p className="mt-2 text-sm/6 text-red-500">{error}</p> : <p>Login With Bluesky</p>}
-
+                  <DialogTitle as="h3" className="text-base/7 font-medium text-black">
                   </DialogTitle>
-                  <p className="mt-2 text-sm/6 text-white/50">
+                  <div className="mt-2 text-sm/6 text-black/50">
                     <InputField
                       id="username"
                       label="Your Bluesky Username"
                       value={username}
                       onChange={setUsername}
-                      help={username && !username.startsWith('@') ? 'Must start with @' : ''}
+                      help={error ? {isError:true, message:error} :undefined}
                     />
-                  </p>
+                  </div>
                   <div className="mt-4 inline-flex items-center gap-2">
                     <Button
-                      className="border-white rounded-md bg-gray-700 py-1.5 px-3 text-sm/6 font-semibold text-white shadow-inner shadow-white/10 focus:outline-none data-[hover]:bg-gray-600 data-[focus]:outline-1 data-[focus]:outline-white data-[open]:bg-gray-700"
+                      className={buttonClassName}
                       onClick={onLogin}
                     >
-                      Login
+                      {isLoading ? <LoaderCircleIcon /> : 'Login'}
                     </Button>
                   </div>
                 </DialogPanel>

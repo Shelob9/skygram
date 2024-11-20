@@ -10,7 +10,10 @@ export default function InputField({
     help
 }:{
     className?:string,
-    help?:string,
+    help? : {
+        isError:boolean,
+        message:string
+    },
     id:string,
     label:string,
     onChange:(value:string) => void,
@@ -22,7 +25,7 @@ export default function InputField({
         <Label
 
             htmlFor={id}
-            className="text-sm/6 font-medium text-white"
+            className="text-sm/6 font-medium text-black"
         >
           {label}
         </Label>
@@ -32,14 +35,21 @@ export default function InputField({
             value={value}
             onChange={(e) => onChange(e.target.value)}
             className={clsx(
-                'mt-3 block w-full rounded-lg border-none bg-white/5 py-1.5 px-3 text-sm/6 text-white',
+                "text-black",
+                'mt-3 block w-full rounded-lg border-2 bg-white/5 py-1.5 px-3 text-sm/6 ',
                 'focus:outline-none data-[focus]:outline-2 data-[focus]:-outline-offset-2 data-[focus]:outline-white/25',
                 className
             )}
         />
         {help ? (
-            <Description className="text-sm/6 text-white/50">
-                {help}
+            <Description className={clsx(
+              "text-sm/6",
+              {
+                'text-black': !help.isError,
+                'text-red-700': help.isError,
+              }
+            )}>
+                {help.message}
             </Description>
         ) : null}
       </Field>
