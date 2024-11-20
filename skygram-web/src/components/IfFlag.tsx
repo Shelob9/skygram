@@ -8,13 +8,10 @@ const getCookie = (name: string) => {
 
 //Render if we have a cookie set for this flagged feature
 export default function IfFlag({cookie,children}:{cookie:string,children:ReactNode}) {
-
     const [flag,setFlag] = useState<boolean>(false)
     useEffect(() => {
         const value = getCookie(cookie)
-        if(value){
-            setFlag(value === 'true')
-        }
+        setFlag(value ? true : false)
     },[cookie])
     return flag ? <>{children}</> : null
 
