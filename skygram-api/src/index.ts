@@ -3,12 +3,12 @@ import { XRPC, simpleFetchHandler } from '@atcute/client';
 import { AtUri } from '@atproto/api';
 import { Hono, HonoRequest } from 'hono';
 import { cors } from 'hono/cors';
-
+import feedgen from './feedgen';
 const xrpc = new XRPC({ handler: simpleFetchHandler({ service: 'https://api.bsky.app' }) });
 
 
 
-import feeds from './feedData';
+import feedData from './feedData';
 type Bindings = {
   baseUrl: string
 
@@ -94,11 +94,10 @@ app.get('/api/feeds', (c) => {
   const url  = c.env.baseUrl;
 
   return c.json({
-    feeds:feeds.map(feed => {
+    feeds:feedData.map(feed => {
       return {
         ...feed,
         posts: `${url}/api/feed/${feed.did}/${feed.rkey}`,
-        skeleton: `${url}/api/skeleton/${feed.did}/${feed.rkey}`
       }
     })
   })
@@ -107,7 +106,7 @@ app.get('/api/feeds', (c) => {
 const parseFeedArgs = (req:HonoRequest) => {
   const did = req.param('did');
   const rkey = req.param('rkey');
-  const feed = feeds.find(f => f.did === did && f.rkey === rkey);
+  const feed = feedData.find(f => f.did === did && f.rkey === rkey);
   const cursor = req.query('cursor');
   const limit = req.query('limit');
 
@@ -144,35 +143,7 @@ app.get('/api/feed/:did/:rkey', async(c) => {
   }
 });
 
-app.get('/api/skeleton/:did/:rkey', async(c) => {
-  const {did,rkey,feed,cursor,limit} = parseFeedArgs(c.req);
-
-  if(!feed){
-    return c.json({error:'feed not found',rkey,did},400)
-  }
-  try {
-    const { data } = await xrpc.get('app.bsky.feed.getFeedSkeleton', {
-      params: {
-        feed: AtUri.make(
-          'did:plc:5rw2on4i56btlcajojaxwcat',
-          'app.bsky.feed.generator',
-          'aaao6g552b33o'
-        ).toString(),
-        limit: limit ? parseInt(limit) : 30,
-        cursor,
-      },
-    });
-    return c.json(data);
-  } catch (error) {
-    console.log({error})
-    return c.json({error:error??'error',feed: AtUri.make(
-      'did:plc:5rw2on4i56btlcajojaxwcat',
-          'app.bsky.feed.generator',
-          'aaao6g552b33o'
-    ).toString(),},500)
-  }
-});
-
-
+//@ts-ignore
+app.route('/api/feedgen',feedgen );
 
 export default app
