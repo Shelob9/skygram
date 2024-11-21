@@ -43,7 +43,7 @@ app.get('/user/did/word', async (c) => {
         // @ts-ignore
         text: post.record.text,
       }
-    })
+    }),
   })
 });
 
