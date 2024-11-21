@@ -23,7 +23,7 @@ preview_database_id = "skygram-feedgen-01-dev"
 [triggers]
 # Schedule cron triggers:
 # Cron at 10AM 2PM and 1AM UTC-5
-crons = [ "0 15,19,6" ]
+crons = ["0 15,19,6 * * *"]
 
 # Bind a KV Namespace. Use KV as persistent storage for small key-value pairs.
 # Docs: https://developers.cloudflare.com/workers/wrangler/configuration/#kv-namespaces

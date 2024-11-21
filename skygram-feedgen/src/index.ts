@@ -20,7 +20,7 @@ type Feed = {
 type Post = {
 	uri : string,
 	created: string,
-	did: string,
+	feed_rkey: string,
 }
 class Cursors {
 	constructor(private KV: KVNamespace,private endpoint:string) {}
@@ -50,10 +50,10 @@ class Cursors {
 	}
 }
 
-async function upsertPosts({DB,posts}: { DB: D1Database,posts: Post[] }, ) {
+async function upsertPosts({DB,posts,rKey}: { rKey:string;DB: D1Database,posts: Post[] }, ) {
 	const queries = posts.map(post => `
-		INSERT OR REPLACE INTO posts (uri, created, did)
-		VALUES ('${post.uri}', '${post.created}', '${post.did}');
+		INSERT OR REPLACE INTO posts (uri, created, feed_rkey)
+		VALUES ('${post.uri}', '${post.created}', '${rKey}');
 	`);
 
 	for (const query of queries) {
@@ -70,10 +70,10 @@ async function upsertFeed({feed,DB,cursors}:{
 		cursors,
 	});
 
-	await upsertPosts({DB,posts:posts.map((post) => {
+	await upsertPosts({rKey:feed.rKey,DB,posts:posts.map((post) => {
 		return {
 			uri: post.uri,
-			did: feed.did,
+			feed_rkey: feed.rKey,
 			// @ts-ignore
 			created: post.record.createdAt,
 		}
@@ -95,6 +95,7 @@ async function getPosts({feed,cursors}: { feed: Feed,cursors: Cursors }) {
 	const {did,search,compare} = feed;
   	const q = createLuceneQuery(search,compare);
 	const cursor =  await cursors.getCursor(feed);
+
     const {data} = await xrpc.get('app.bsky.feed.searchPosts', {
       params: {
         q,
@@ -125,35 +126,41 @@ const joshFeeds : Feed[] = [
 ];
 
 
-
+async function syncAll({KV,DB}: { KV: KVNamespace,DB: D1Database }) {
+	const cursors = new Cursors(KV, endpoint);
+		for (const feed of joshFeeds) {
+		await upsertFeed({ feed, DB, cursors });
+	}
+}
 const endpoint = 'app.bsky.feed.searchPosts';
 export default {
 	async fetch(request, env:Env, ctx:ExecutionContext) {
-
-
 		const url = new URL(request.url);
-				//if first url  is '/all
+		//if first url  is '/all
+		//return all saved posts
+		if(url.pathname === '/all') {
+			await syncAll({
+				KV: env.KV,
+				DB: env.DB,
+			});
+			const results = await env.DB.prepare(`
+				SELECT * FROM posts
+				ORDER BY created DESC
+				LIMIT 100
+			`).all();
 
-			//return all saved posts
-			if(url.pathname === '/all') {
-				const results = await env.DB.prepare(`
-					SELECT * FROM posts
-					ORDER BY created DESC
-					LIMIT 100
-				`).all();
 
-
-				return new Response(
-					JSON.stringify({
-						posts: results.results
-					}), {
-						headers: {
-							'Content-Type': 'application/json',
-						},
-						status: 200
-					}
-				);
-			}
+			return new Response(
+				JSON.stringify({
+					posts: results.results
+				}), {
+					headers: {
+						'Content-Type': 'application/json',
+					},
+					status: 200
+				}
+			);
+		}
 		//first part is did
 		const did = url.pathname.split('/')[1];
 		//make error if did is not in joshFeeds
@@ -207,14 +214,14 @@ export default {
 		//get posts since cursor
 		const results = cursor ? await env.DB.prepare(`
 			SELECT * FROM posts
-			WHERE did = '${did}'
+			WHERE feed_rkey = '${rKey}'
 			WHERE created > '${cursor}'
 			ORDER BY created DESC
 			LIMIT 100
 		`).all() :
 		await env.DB.prepare(`
 			SELECT * FROM posts
-			WHERE did = '${did}'
+			WHERE feed_rkey = '${rKey}'
 			ORDER BY created DESC
 			LIMIT 100
 		`).all();
@@ -241,10 +248,10 @@ export default {
 		);
 	},
 	async scheduled(_event, env: Env, _ctx: ExecutionContext) {
-		const cursors = new Cursors(env.KV, endpoint);
-		for (const feed of joshFeeds) {
-		  await upsertFeed({ feed, DB: env.DB, cursors });
-		}
+		await syncAll({
+			KV: env.KV,
+			DB: env.DB,
+		});
 	}
 
 
