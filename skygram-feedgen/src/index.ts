@@ -199,8 +199,8 @@ class Posts {
 
 	async upsertPosts({ posts, rKey }: { rKey: string; posts: Post[] },) {
 		const queries = posts.map(post => `
-			INSERT OR REPLACE INTO posts (uri, created, feed_rkey)
-			VALUES ('${post.uri}', '${post.created}', '${rKey}');
+			INSERT OR REPLACE INTO posts (uri, created, feed_rkey, author_did)
+			VALUES ('${post.uri}', '${post.created}', '${rKey}', '${post.author_did}');
 		`);
 
 		for (const query of queries) {
@@ -246,7 +246,6 @@ export default {
 			identifier: env.BOT_USERNAME,
 			password: env.BOT_PASSWORD,
 		});
-
 
 		if (url.pathname === '/all') {
 			const results = await env.DB.prepare(`
