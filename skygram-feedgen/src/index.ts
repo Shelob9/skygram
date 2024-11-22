@@ -239,7 +239,7 @@ async function xrpcFactory({
 export default {
 	async fetch(request, env: Env, ctx: ExecutionContext) {
 
-		const url = new URL(request.url);
+		const url = new URL(request.url.replace("/feedgen/xrpc", ""));
 		const cursor = url.searchParams.get('cursor') || undefined;
 		const postsApi = new Posts(env.DB);
 		const xrpc = await xrpcFactory({
@@ -247,24 +247,7 @@ export default {
 			password: env.BOT_PASSWORD,
 		});
 
-		if (url.pathname === '/all') {
-			const results = await env.DB.prepare(`
-				SELECT * FROM posts
-				ORDER BY created DESC
-				LIMIT 100
-			`).all();
-
-			return new Response(
-				JSON.stringify({
-					posts: results.results
-				}), {
-				headers: {
-					'Content-Type': 'application/json',
-				},
-				status: 200
-			});
-			//2 would be like /:rKey
-		} else if (2 == url.pathname.split('/').length) {
+		if (2 == url.pathname.split('/').length) {
 			const feed_rkey = url.pathname.split('/')[1];
 			const feeds = new Feeds(joshFeeds);
 			const feed = feeds.find(josh, feed_rkey);
@@ -328,7 +311,7 @@ export default {
 					status: 405
 				});
 			}
-			//rkey is thrid part
+			//rkey is third part
 			const rKey = url.pathname.split('/')[3];
 			const feed = joshFeeds.find(f => did == f.did && f.rKey === rKey);
 			//has feed with did and rkey
