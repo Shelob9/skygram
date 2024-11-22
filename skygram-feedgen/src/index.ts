@@ -1,7 +1,7 @@
 import '@atcute/bluesky/lexicons';
 
 import { CredentialManager, XRPC } from '@atcute/client';
-import { AppBskyFeedGetFeedSkeleton } from '@atcute/client/lexicons';
+import { AppBskyFeedDefs, AppBskyFeedGetFeedSkeleton } from '@atcute/client/lexicons';
 type Env = {
 	DB: D1Database,
 	KV: KVNamespace,
@@ -24,6 +24,7 @@ type Post = {
 	uri: string,
 	created: string,
 	feed_rkey: string,
+	author_did: string,
 }
 class Cursors {
 	constructor(private KV: KVNamespace, private endpoint: string, private type: string) { }
@@ -55,16 +56,14 @@ class Cursors {
 
 
 
-async function upsertFeed({ feed, postsApi, cursors,xrpc }: {
+async function upsertFeed({ feed, postsApi,xrpc }: {
 	feed: Feed,
 	postsApi: Posts,
-	cursors: Cursors,
 	xrpc:XRPC
 }) {
-	const { posts, cursor } = await getPosts({
+	const { posts,  } = await getPosts({
 		xrpc,
 		feed,
-		cursors,
 	});
 
 	await postsApi.upsertPosts({
@@ -72,12 +71,13 @@ async function upsertFeed({ feed, postsApi, cursors,xrpc }: {
 			return {
 				uri: post.uri,
 				feed_rkey: feed.rKey,
+
+				author_did: post.author.did,
 				// @ts-ignore
 				created: post.record.createdAt,
 			}
 		})
 	});
-	await cursors.setCursor(feed, cursor);
 }
 
 function createLuceneQuery(words: string[]) {
@@ -87,7 +87,7 @@ function createLuceneQuery(words: string[]) {
 
 	return words.map(word => `+${word}`).join(' ');
 }
-async function getPosts({ feed, cursors,xrpc,cursor }: {cursor?:string; xrpc:XRPC,feed: Feed, cursors: Cursors }) {
+async function getPosts({ feed, xrpc,cursor }: {cursor?:string; xrpc:XRPC,feed: Feed }) {
 	const { did, search } = feed;
 	const q = createLuceneQuery(search);
 
@@ -132,11 +132,10 @@ const joshFeeds: Feed[] = [
 
 
 async function syncAll({ KV, DB,xrpc}: { xrpc:XRPC, KV: KVNamespace, DB: D1Database, }) {
-	const cursors = new Cursors(KV, endpoint, 'injest');
 	const postsApi = new Posts(DB);
 	for (const feed of joshFeeds) {
 		try {
-			await upsertFeed({ feed, postsApi, cursors,xrpc });
+			await upsertFeed({ feed, postsApi, xrpc });
 		} catch (e) {
 			console.error(e);
 		}
@@ -146,16 +145,15 @@ async function syncAll({ KV, DB,xrpc}: { xrpc:XRPC, KV: KVNamespace, DB: D1Datab
 class Posts {
 	constructor(private DB: D1Database) { }
 
-	toSkelton(posts: Post[]): AppBskyFeedGetFeedSkeleton.PostView[] {
+	toSkelton(posts: Post[]): AppBskyFeedDefs.SkeletonFeedPost[] {
 		return posts.map(post => {
 			return {
-				post: post.uri,
+				post: post.uri as string,
+
 			}
 		});
 	}
-	async getPosts({ feed_rkey, cursor }: { feed_rkey: string, cursor?: string }) {
-
-
+	async getPosts({ feed_rkey, cursor }: { feed_rkey: string, cursor?: string }): Promise<Post[] | undefined> {
 		const results = cursor ? await this.DB.prepare(`
 			SELECT * FROM posts
 			WHERE feed_rkey = '${feed_rkey}'
@@ -169,7 +167,16 @@ class Posts {
 			ORDER BY created DESC
 			LIMIT 100
 		`).all();
-		return results.results;
+		return results.results.length ? results.results.map(this.resultToPost) : undefined;
+	}
+
+	private resultToPost(result: any): Post {
+		return {
+			uri: result.uri as string,
+			created: result.created as string,
+			feed_rkey: result.feed_rkey as string,
+			author_did: result.author_did as string,
+		}
 	}
 
 	async getPost({ uri }: { uri: string }): Promise<Post | undefined> {
@@ -180,15 +187,7 @@ class Posts {
 		if (!result || !result.results.length) {
 			return undefined;
 		}
-		return {
-			//@ts-ignore
-			uri: result.results[0].uri,
-			//@ts-ignore
-
-			created: result.results[0].created,
-			//@ts-ignore
-			feed_rkey: result.results[0].feed_rkey,
-		}
+		return this.resultToPost(result.results[0]);
 	}
 
 	async deletePost({ uri }: { uri: string }) {
@@ -240,7 +239,6 @@ async function xrpcFactory({
 export default {
 	async fetch(request, env: Env, ctx: ExecutionContext) {
 
-
 		const url = new URL(request.url);
 		const cursor = url.searchParams.get('cursor') || undefined;
 		const postsApi = new Posts(env.DB);
@@ -248,11 +246,7 @@ export default {
 			identifier: env.BOT_USERNAME,
 			password: env.BOT_PASSWORD,
 		});
-		await syncAll({
-			KV: env.KV,
-			DB: env.DB,
-			xrpc,
-		});
+
 
 		if (url.pathname === '/all') {
 			const results = await env.DB.prepare(`
@@ -322,7 +316,18 @@ export default {
 			//second part is endpoint,
 			const rEndpoint = url.pathname.split('/')[2];
 			if (![endpoint, searchEndpoint].includes(rEndpoint)) {
-				const posts = await xrp
+				return new Response(
+					JSON.stringify({
+						message: `Invalid endpoint`,
+						rEndpoint,
+						endpoint,
+						searchEndpoint
+					}), {
+					headers: {
+						'Content-Type': 'application/json',
+					},
+					status: 405
+				});
 			}
 			//rkey is thrid part
 			const rKey = url.pathname.split('/')[3];
@@ -343,9 +348,8 @@ export default {
 				);
 			}
 			if( rEndpoint === searchEndpoint){
-				const cursors = new Cursors(env.KV, searchEndpoint, 'search');
 				try {
-					const results = await getPosts({feed,cursors,xrpc,cursor});
+					const results = await getPosts({feed,xrpc,cursor});
 					return new Response(
 						JSON.stringify(results), {
 						headers: {
@@ -366,10 +370,8 @@ export default {
 					});
 				}
 			}
-
-
 			const posts = await postsApi.getPosts({ cursor, feed_rkey: rKey });
-			if (!posts.length) {
+			if (!posts || !posts.length) {
 				return new Response(
 					JSON.stringify({}),
 					{
@@ -394,8 +396,7 @@ export default {
 					'Content-Type': 'application/json',
 				},
 				status: 200
-			}
-			);
+			});
 		}
 		return new Response(
 			JSON.stringify({}), {
