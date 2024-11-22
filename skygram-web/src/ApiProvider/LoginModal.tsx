@@ -34,7 +34,7 @@ export default function LoginModal() {
           createAuthorizationUrl({
               metadata: metadata,
               identity: identity,
-              scope: 'atproto transition:generic transition:chat.bsky',
+              scope: 'atproto transition:generic',
           }).then((authUrl) => {
               setTimeout(() => {
                   window.location.assign(authUrl);

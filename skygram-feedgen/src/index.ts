@@ -1,12 +1,16 @@
 import '@atcute/bluesky/lexicons';
 
-import { XRPC, simpleFetchHandler } from '@atcute/client';
+import { CredentialManager, XRPC } from '@atcute/client';
 import { AppBskyFeedGetFeedSkeleton } from '@atcute/client/lexicons';
 type Env = {
 	DB: D1Database,
 	KV: KVNamespace,
+	BOT_USERNAME: string,
+	BOT_PASSWORD: string,
 }
-const xrpc = new XRPC({ handler: simpleFetchHandler({ service: 'https://api.bsky.app' }) });
+
+	//service: 'https://api.bsky.app' }) });
+
 const josh = 'did:plc:payluere6eb3f6j5nbmo2cwy';
 
 type Feed = {
@@ -51,12 +55,14 @@ class Cursors {
 
 
 
-async function upsertFeed({ feed, postsApi, cursors }: {
+async function upsertFeed({ feed, postsApi, cursors,xrpc }: {
 	feed: Feed,
 	postsApi: Posts,
 	cursors: Cursors,
+	xrpc:XRPC
 }) {
 	const { posts, cursor } = await getPosts({
+		xrpc,
 		feed,
 		cursors,
 	});
@@ -81,17 +87,16 @@ function createLuceneQuery(words: string[]) {
 
 	return words.map(word => `+${word}`).join(' ');
 }
-async function getPosts({ feed, cursors }: { feed: Feed, cursors: Cursors }) {
+async function getPosts({ feed, cursors,xrpc,cursor }: {cursor?:string; xrpc:XRPC,feed: Feed, cursors: Cursors }) {
 	const { did, search } = feed;
 	const q = createLuceneQuery(search);
-	const cursor = await cursors.getCursor(feed);
 
 	const { data } = await xrpc.get('app.bsky.feed.searchPosts', {
 		params: {
 			q,
 			limit: 100,
 			author: did,
-			//cursor,
+			cursor,
 		},
 	});
 
@@ -126,12 +131,12 @@ const joshFeeds: Feed[] = [
 ];
 
 
-async function syncAll({ KV, DB }: { KV: KVNamespace, DB: D1Database }) {
+async function syncAll({ KV, DB,xrpc}: { xrpc:XRPC, KV: KVNamespace, DB: D1Database, }) {
 	const cursors = new Cursors(KV, endpoint, 'injest');
 	const postsApi = new Posts(DB);
 	for (const feed of joshFeeds) {
 		try {
-			await upsertFeed({ feed, postsApi, cursors });
+			await upsertFeed({ feed, postsApi, cursors,xrpc });
 		} catch (e) {
 			console.error(e);
 		}
@@ -218,34 +223,43 @@ class Feeds {
 }
 
 const endpoint = 'app.bsky.feed.getFeedSkeleton';
+const searchEndpoint = 'app.bsky.feed.searchPosts';
+
+async function xrpcFactory({
+	identifier,
+	password
+ }: {
+	identifier: string,
+	password: string,
+ }): Promise<XRPC> {
+	const manager = new CredentialManager({ service: 'https://bsky.social' });
+	await manager.login({ identifier,password	 });
+	const xrpc = new XRPC({ handler:manager  });
+	return xrpc;
+}
 export default {
 	async fetch(request, env: Env, ctx: ExecutionContext) {
+
+
 		const url = new URL(request.url);
 		const cursor = url.searchParams.get('cursor') || undefined;
 		const postsApi = new Posts(env.DB);
-		if ('/sync' === url.pathname) {
-			await syncAll({
-				KV: env.KV,
-				DB: env.DB,
-			});
-			return new Response(
-				JSON.stringify({
-					sync: joshFeeds,
-				}), {
-				headers: {
-					'Content-Type': 'application/json',
-				},
-				status: 200
-			}
-			);
-		}
-		else if (url.pathname === '/all') {
+		const xrpc = await xrpcFactory({
+			identifier: env.BOT_USERNAME,
+			password: env.BOT_PASSWORD,
+		});
+		await syncAll({
+			KV: env.KV,
+			DB: env.DB,
+			xrpc,
+		});
+
+		if (url.pathname === '/all') {
 			const results = await env.DB.prepare(`
 				SELECT * FROM posts
 				ORDER BY created DESC
 				LIMIT 100
 			`).all();
-
 
 			return new Response(
 				JSON.stringify({
@@ -255,8 +269,7 @@ export default {
 					'Content-Type': 'application/json',
 				},
 				status: 200
-			}
-			);
+			});
 			//2 would be like /:rKey
 		} else if (2 == url.pathname.split('/').length) {
 			const feed_rkey = url.pathname.split('/')[1];
@@ -272,8 +285,7 @@ export default {
 						'Content-Type': 'application/json',
 					},
 					status: 404
-				}
-				);
+				});
 			}
 			const posts = await postsApi.getPosts({ cursor, feed_rkey });
 
@@ -281,13 +293,14 @@ export default {
 				JSON.stringify({
 					posts,
 					feed_rkey,
-				}), {
-				headers: {
-					'Content-Type': 'application/json',
-				},
-				status: 200
-			}
+				}),
+				{
+					headers: {
+						'Content-Type': 'application/json',
+					},
+				}
 			);
+
 		} else if (4 == url.pathname.split('/').length) {
 			//first part is did
 			const did = url.pathname.split('/')[1];
@@ -304,22 +317,12 @@ export default {
 						'Content-Type': 'application/json',
 					},
 					status: 404
-				}
-				);
+				});
 			}
 			//second part is endpoint,
-			if (url.pathname.split('/')[2] !== endpoint) {
-				return new Response(
-					JSON.stringify({
-						message: `${url.pathname.split('/')[2]} not supported`,
-						did,
-					}), {
-					headers: {
-						'Content-Type': 'application/json',
-					},
-					status: 405
-				}
-				);
+			const rEndpoint = url.pathname.split('/')[2];
+			if (![endpoint, searchEndpoint].includes(rEndpoint)) {
+				const posts = await xrp
 			}
 			//rkey is thrid part
 			const rKey = url.pathname.split('/')[3];
@@ -339,16 +342,42 @@ export default {
 				}
 				);
 			}
+			if( rEndpoint === searchEndpoint){
+				const cursors = new Cursors(env.KV, searchEndpoint, 'search');
+				try {
+					const results = await getPosts({feed,cursors,xrpc,cursor});
+					return new Response(
+						JSON.stringify(results), {
+						headers: {
+							'Content-Type': 'application/json',
+						},
+						status: 200
+					});
+				} catch (error) {
+					return new Response(
+						JSON.stringify({
+							rKey,
+							did,
+						}), {
+						headers: {
+							'Content-Type': 'application/json',
+						},
+						status: 500
+					});
+				}
+			}
+
 
 			const posts = await postsApi.getPosts({ cursor, feed_rkey: rKey });
 			if (!posts.length) {
 				return new Response(
-					JSON.stringify({}), {
-					headers: {
-						'Content-Type': 'application/json',
-					},
-					status: 404
-				}
+					JSON.stringify({}),
+					{
+						headers: {
+							'Content-Type': 'application/json',
+						},
+						status: 404
+					}
 				);
 			}
 			const skeltonPosts = postsApi.toSkelton(posts);
@@ -380,9 +409,14 @@ export default {
 
 	},
 	async scheduled(_event, env: Env, _ctx: ExecutionContext) {
+		const xrpc = await xrpcFactory({
+			identifier: env.BOT_USERNAME,
+			password: env.BOT_PASSWORD,
+		});
 		await syncAll({
 			KV: env.KV,
 			DB: env.DB,
+			xrpc,
 		});
 	}
 

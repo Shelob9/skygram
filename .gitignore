@@ -30,3 +30,6 @@ skygram-api/.env
 skygram-web/.env
 skygram-web/.wrangler
 skygram-web/dev
+
+.dev.vars
+skygram-feedgen/.dev.vars

@@ -109,7 +109,7 @@ app.get('/api/oauth.json', (c) => {
     "tos_uri": `${url}/tos`,
     "policy_uri": `${url}/policy`,
     "redirect_uris": [url],
-    "scope": "atproto",
+    "scope":'atproto transition:generic',
     "grant_types": ["authorization_code", "refresh_token"],
     "response_types": ["code"],
     "token_endpoint_auth_method": "none",
