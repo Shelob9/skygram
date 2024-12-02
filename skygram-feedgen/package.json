@@ -10,7 +10,6 @@
     "deploy": "wrangler deploy --minify",
     "migrate:local": "wrangler d1 migrations apply skygram-feedgen-01 --local",
     "migrate:prod": " wrangler d1 migrations apply skygram-feedgen-01 --remote"
-
   },
   "devDependencies": {
     "@cloudflare/vitest-pool-workers": "^0.5.2",

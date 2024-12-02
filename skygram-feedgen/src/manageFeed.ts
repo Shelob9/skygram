@@ -24,26 +24,35 @@ export class ManageFeed {
         private feedGen: Feed_Generator){
 
     }
+    get hostname(){
+        return this.feedGen.hostname;
+    }
     async publishFeed(
         { repo, recordName, displayName, description,avatarRef }: Feed & {avatarRef?: At.Blob}
     ){
         const feedGenDid =`did:web:${this.feedGen.hostname}`
-        await this.xrpc.request({
+
+        const response = await this.xrpc.request({
             nsid: 'com.atproto.repo.putRecord',
             type: 'post',
-            params: {
+            data: {
                 repo,
                 collection: 'app.bsky.feed.generator',
                 rkey: recordName,
                 record: {
+                    repo,
                     did: feedGenDid,
                     displayName: displayName,
                     description: description,
                     avatar: avatarRef,
                     createdAt: new Date().toISOString(),
                 },
-            }
+            },
+            headers: {
+                'content-type': 'application/json',
+            },
         })
+        return response;
     }
 
     async unpublishFeed({repo, recordName}:Pick<Feed,'recordName'|'repo'>){

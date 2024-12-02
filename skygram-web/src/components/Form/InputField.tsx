@@ -7,8 +7,10 @@ export default function InputField({
     id,
     onChange,
     value,
-    help
+    help,
+    required
 }:{
+  required?:  boolean,
     className?:string,
     help? : {
         isError:boolean,
@@ -31,6 +33,7 @@ export default function InputField({
         </Label>
 
         <Input
+            required={required}
             id={id}
             value={value}
             onChange={(e) => onChange(e.target.value)}

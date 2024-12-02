@@ -51,7 +51,7 @@ app.get('/api/profile', async (c) => {
   try {
     const {data } = await xrpc.get('app.bsky.actor.getProfile', {
       params: {
-       handle
+        handle
       },
     });
     return c.json(data)
@@ -108,9 +108,12 @@ app.get('/api/oauth.json', (c) => {
     "logo_uri": `https://cdn.josh412.com/uploads/2024/06/macy-bear.jpg`,
     "tos_uri": `${url}/tos`,
     "policy_uri": `${url}/policy`,
-    "redirect_uris": [url],
+    "redirect_uris": [url, `${url}/oauth`],
     "scope":'atproto transition:generic',
-    "grant_types": ["authorization_code", "refresh_token"],
+    "grant_types": [
+      "authorization_code",
+      "refresh_token"
+    ],
     "response_types": ["code"],
     "token_endpoint_auth_method": "none",
     "application_type": "web",

@@ -30,7 +30,6 @@ export default function LoginModal() {
       setIsLoading(true)
       resolveFromIdentity(username.replace('@', ''))
         .then(({ identity, metadata }) => {
-          console.log({ identity, metadata });
           createAuthorizationUrl({
               metadata: metadata,
               identity: identity,
@@ -53,7 +52,7 @@ export default function LoginModal() {
       configureOAuth({
         metadata: {
           client_id: 'https://skygram.app/api/oauth.json',
-          redirect_uri: 'https://skygram.app',
+          redirect_uri: 'https://skygram.app/oauth',
         },
       });
     },[]);

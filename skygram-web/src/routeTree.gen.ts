@@ -16,11 +16,18 @@ import { Route as rootRoute } from './routes/__root'
 
 // Create Virtual Routes
 
+const FeedgenLazyImport = createFileRoute('/feedgen')()
 const AboutLazyImport = createFileRoute('/about')()
 const IndexLazyImport = createFileRoute('/')()
 const PostersActorLazyImport = createFileRoute('/posters/$actor')()
 
 // Create/Update Routes
+
+const FeedgenLazyRoute = FeedgenLazyImport.update({
+  id: '/feedgen',
+  path: '/feedgen',
+  getParentRoute: () => rootRoute,
+} as any).lazy(() => import('./routes/feedgen.lazy').then((d) => d.Route))
 
 const AboutLazyRoute = AboutLazyImport.update({
   id: '/about',
@@ -60,6 +67,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AboutLazyImport
       parentRoute: typeof rootRoute
     }
+    '/feedgen': {
+      id: '/feedgen'
+      path: '/feedgen'
+      fullPath: '/feedgen'
+      preLoaderRoute: typeof FeedgenLazyImport
+      parentRoute: typeof rootRoute
+    }
     '/posters/$actor': {
       id: '/posters/$actor'
       path: '/posters/$actor'
@@ -75,12 +89,14 @@ declare module '@tanstack/react-router' {
 export interface FileRoutesByFullPath {
   '/': typeof IndexLazyRoute
   '/about': typeof AboutLazyRoute
+  '/feedgen': typeof FeedgenLazyRoute
   '/posters/$actor': typeof PostersActorLazyRoute
 }
 
 export interface FileRoutesByTo {
   '/': typeof IndexLazyRoute
   '/about': typeof AboutLazyRoute
+  '/feedgen': typeof FeedgenLazyRoute
   '/posters/$actor': typeof PostersActorLazyRoute
 }
 
@@ -88,27 +104,30 @@ export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexLazyRoute
   '/about': typeof AboutLazyRoute
+  '/feedgen': typeof FeedgenLazyRoute
   '/posters/$actor': typeof PostersActorLazyRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/about' | '/posters/$actor'
+  fullPaths: '/' | '/about' | '/feedgen' | '/posters/$actor'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/about' | '/posters/$actor'
-  id: '__root__' | '/' | '/about' | '/posters/$actor'
+  to: '/' | '/about' | '/feedgen' | '/posters/$actor'
+  id: '__root__' | '/' | '/about' | '/feedgen' | '/posters/$actor'
   fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
   IndexLazyRoute: typeof IndexLazyRoute
   AboutLazyRoute: typeof AboutLazyRoute
+  FeedgenLazyRoute: typeof FeedgenLazyRoute
   PostersActorLazyRoute: typeof PostersActorLazyRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexLazyRoute: IndexLazyRoute,
   AboutLazyRoute: AboutLazyRoute,
+  FeedgenLazyRoute: FeedgenLazyRoute,
   PostersActorLazyRoute: PostersActorLazyRoute,
 }
 
@@ -124,6 +143,7 @@ export const routeTree = rootRoute
       "children": [
         "/",
         "/about",
+        "/feedgen",
         "/posters/$actor"
       ]
     },
@@ -132,6 +152,9 @@ export const routeTree = rootRoute
     },
     "/about": {
       "filePath": "about.lazy.tsx"
+    },
+    "/feedgen": {
+      "filePath": "feedgen.lazy.tsx"
     },
     "/posters/$actor": {
       "filePath": "posters/$actor.lazy.tsx"

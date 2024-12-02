@@ -20,6 +20,7 @@ export default defineConfig({
       input: {
         index: resolve(__dirname, 'index.html'),
         feedgen: resolve(__dirname, 'feedgen.html'),
+        oauth: resolve(__dirname, 'oauth.html'),
       },
     },
   },
