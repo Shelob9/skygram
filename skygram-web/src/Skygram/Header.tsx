@@ -39,7 +39,7 @@ function UserAvatar(
     )
 }
 
-
+//<header tag is in template
 export default function Header() {
   const pathname = useLocation({
     select: (location) => location.pathname,
@@ -55,7 +55,7 @@ export default function Header() {
   const setFeed = useCallback((feed: T_Feed) => setCurrentFeed(feed.did), [setCurrentFeed]);
 
   return (
-      <div className="sticky top-0 border-b shadow-sm bg-white z-30">
+      <>
         {/** <!-- Header --> */}
 
         <div
@@ -110,6 +110,6 @@ export default function Header() {
             </IfFlag>
           </div>
         </div>
-      </div>
+      </>
   )
 }

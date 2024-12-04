@@ -1,27 +1,70 @@
-import { TanStackRouterVite } from '@tanstack/router-plugin/vite'
-import viteReact from '@vitejs/plugin-react'
-import { resolve } from 'node:path'
-import { defineConfig } from 'vite'
+import { TanStackRouterVite } from '@tanstack/router-plugin/vite';
+import viteReact from '@vitejs/plugin-react';
+import type { UserConfig } from 'vite';
+import { defineConfig, } from 'vite';
+import { createHtmlPlugin } from 'vite-plugin-html';
+
 // https://vitejs.dev/config/
-export default defineConfig({
-  plugins: [
+export default defineConfig(({ mode }:{}) => {
+  const isProd = mode === 'production';
+  return {
+    plugins: [
     TanStackRouterVite(),
     viteReact(),
-  ],
+    createHtmlPlugin({
+        minify: isProd,
+        entry: 'src/main.tsx',
+        template: 'index.html',
+        inject: {
+          data: {
+            title: 'Skygram',
+            injectScript: isProd
+              ? `<script type="module">window.SKYGRAM = 1;</script>`
+              : `<link rel="stylesheet" href="/src/index.css" />`,
+          },
+          tags: [
+            {
+              "injectTo": "body-prepend",
+              tag: "header",
+              attrs:{
+                class: `sticky top-0 border-b shadow-sm bg-white z-30`,
+                id:`skygram-header`
+              }
+            },
 
-  server: {
-    proxy: {
-      '/api': 'http://localhost:5100',
-    },
-  },
+            {
+              injectTo: 'body-prepend',
+              tag: 'main',
+              attrs: {
+                id: 'skygram-main',
+                class:`grid grid-cols-1 md:grid-cols-3 mx-auto md:max-w-6xl`,
+              },
+              children: [
+                {
+                  tag: 'section',
+                  attrs: {
+                    class: 'md:col-span-2',
+                    id: 'skygram-main-section',
+                  },
+                },{
+                  tag: 'aside',
+                  attrs:{
+                    id: 'skygram-main-aside',
+                    class: `hidden md:inline-grid md:col-span-1`,
+                  },
+                }
+              ],
+            },
 
-  build: {
-    rollupOptions: {
-      input: {
-        index: resolve(__dirname, 'index.html'),
-        feedgen: resolve(__dirname, 'feedgen.html'),
-        oauth: resolve(__dirname, 'oauth.html'),
+          ],
+        },
+      }),
+    ],
+
+    server: {
+      proxy: {
+        '/api': 'http://localhost:5100',
       },
     },
-  },
-})
+  } satisfies UserConfig;
+});

@@ -4,6 +4,7 @@ import AsideSection from "./AsideSection";
 import feeds from "./feeds";
 import Profile from "./Feeds/Profile";
 
+//   <aside tag is in template
 
 export default function Aside() {
     const {currentFeed} = useApi();
@@ -11,7 +12,7 @@ export default function Aside() {
         select: (location) => location.pathname,
     })
     return (
-        <aside className="hidden md:inline-grid md:col-span-1">
+        <>
             <div className="fixed w-[380px]">
                 {"/" == pathname ? (
                     <AsideSection title="Feeds Used">
@@ -59,6 +60,6 @@ export default function Aside() {
                     </div>
                 </div>
             )}
-        </aside>
+        </>
     );
 }
