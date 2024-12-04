@@ -1,0 +1,16 @@
+{
+  "rev": "3lcgvto4on32q",
+  "type": "c",
+  "operation": "create",
+  "collection": "app.bsky.feed.post",
+  "rkey": "3lcgvtnz2tc24",
+  "record": {
+    "$type": "app.bsky.feed.post",
+    "createdAt": "2024-12-04T00:34:53.066Z",
+    "langs": [
+      "en"
+    ],
+    "text": "One"
+  },
+  "cid": "bafyreigche3ocskqdwjvd3woemrxzee7t52k74cdnob5aqdad2igtz52im"
+}

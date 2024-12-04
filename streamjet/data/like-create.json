@@ -1,0 +1,16 @@
+{
+  "rev": "3lcgvt56f4l2q",
+  "type": "c",
+  "operation": "create",
+  "collection": "app.bsky.feed.like",
+  "rkey": "3lcgvt56c6t2q",
+  "record": {
+    "$type": "app.bsky.feed.like",
+    "createdAt": "2024-12-04T00:34:35.299Z",
+    "subject": {
+      "cid": "bafyreihzsdypmwe6m7ianrdithuity4a6uqxlcqf4f5dd62mieoo3xxp2u",
+      "uri": "at://did:plc:payluere6eb3f6j5nbmo2cwy/app.bsky.feed.post/3lcfugf33xo2n"
+    }
+  },
+  "cid": "bafyreiekknraucfebk5xrrzvk4rvebyrhnyh46f5swccke3d4l7fmsqlqu"
+}

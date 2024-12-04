@@ -9,6 +9,7 @@ const xrpc = new XRPC({ handler: simpleFetchHandler({ service: 'https://api.bsky
 
 
 import feedData from './feedData';
+import verifyWebhookSignature from './verifyWebhookSignature';
 type Bindings = {
   baseUrl: string
 
@@ -44,6 +45,24 @@ app.get('/api/status', (c) => {
     oauth: `${baseUrl}/api/oauth.json`,
     baseUrl: baseUrl,
   })
+})
+
+app.post('/api/status/streamjet', async (c) => {
+  const body = await c.req.text();
+  const signature = c.req.header('x-signature');
+  const timestamp = c.req.header('x-timestamp');
+  const valid = verifyWebhookSignature({
+    secret:'jr2c44ndobinz7s7by4j73hb',
+    body,
+    signature:signature??'',
+    timestamp:timestamp??''
+  })
+  if(!valid){
+    return c.json({ok:false,error:'invalid signature'},401)
+  }
+  const data = JSON.parse(body);
+  console.log({signature,timestamp,valid})
+  return c.json({ok:true,valid,did:data.did})
 })
 
 app.get('/api/profile', async (c) => {

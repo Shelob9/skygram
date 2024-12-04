@@ -2,7 +2,7 @@ name = "skygram-api"
 main = "src/index.ts"
 compatibility_date = "2024-11-01"
 
-# compatibility_flags = [ "nodejs_compat" ]
+ compatibility_flags = [ "nodejs_compat" ]
 
 # [vars]
 # MY_VAR = "my-variable"

@@ -17,12 +17,12 @@ import macyRef from "./cli/macyRef.json";
         password: PASSWORD
     });
 
+
     const manager = new ManageFeed(xrpc, {
         publisherDid: josh,
         hostname: 'skygram-feedgen.imaginarymachines.workers.dev'
     });
     const feedGenDid =`did:web:${manager.hostname}`
-
 
     await Promise.all(joshFeeds.map(async feed => {
         console.log(`Publishing feed ${feed.name}`);
@@ -39,7 +39,7 @@ import macyRef from "./cli/macyRef.json";
                         displayName: feed.name,
                         description: feed.description,
                         createdAt: new Date().toISOString(),
-                        avatarRef: macyRef,
+                        avatarRef: macyRef.ref.$link,
                     },
                 },
                 headers: {
