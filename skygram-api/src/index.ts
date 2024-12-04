@@ -47,8 +47,9 @@ app.get('/api/status', (c) => {
   })
 })
 
-app.post('/api/status/streamjet', async (c) => {
+app.post('/api/status/streamjet/:eventType', async (c) => {
   const body = await c.req.text();
+  const eventType = c.req.param('eventType');
   const signature = c.req.header('x-signature');
   const timestamp = c.req.header('x-timestamp');
   const valid = verifyWebhookSignature({
@@ -61,8 +62,9 @@ app.post('/api/status/streamjet', async (c) => {
     return c.json({ok:false,error:'invalid signature'},401)
   }
   const data = JSON.parse(body);
-  console.log({signature,timestamp,valid})
-  return c.json({ok:true,valid,did:data.did})
+  const rKey = data.commit.rkey;
+  const collection = data.commit.collection;
+  return c.json({ok:true,rKey,collection,did:data.did,eventType})
 })
 
 app.get('/api/profile', async (c) => {

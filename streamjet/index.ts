@@ -20,7 +20,8 @@ console.log({url})
 const socket = new WebSocket(url);
 
 const log = async (eventType:string, data:any) => {
-    const response = await sendEvent('http://localhost:5100/api/status/streamjet','jr2c44ndobinz7s7by4j73hb',data)
+    const url = `http://localhost:8787/api/posts/${eventType}`
+    const response = await sendEvent(url,'jr2c44ndobinz7s7by4j73hb',data)
     console.log({eventType,response})
 }
 socket.addEventListener("message", async(event) => {
@@ -33,13 +34,13 @@ socket.addEventListener("message", async(event) => {
 
             case 'app.bsky.feed.post':
                 if('create' === operation) {
-                    await log('New Post', {
+                    await log('post-created', {
                         did,
                         record,
                         commit: data.commit
                     })
                 }else if('delete' === operation) {
-                    await log('Post Removed', {
+                    await log('post-deleted', {
                         did,
                         record,
                         commit: data.commit
@@ -48,12 +49,12 @@ socket.addEventListener("message", async(event) => {
                 break;
             case 'app.bsky.feed.like':
                 if('create' === operation) {
-                    await log('New Like', {
+                    await log('like-created', {
                         did,
                         commit: data.commit
                     })
                 }else if('delete' === operation) {
-                    await log('Like Removed', {
+                    await log('like-removed', {
                         did,
                         commit: data.commit
                     })

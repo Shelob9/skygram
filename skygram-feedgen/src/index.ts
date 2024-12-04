@@ -3,6 +3,7 @@ import '@atcute/bluesky/lexicons';
 import { XRPC } from '@atcute/client';
 import { AppBskyFeedDefs, AppBskyFeedGetFeedSkeleton, AppBskyFeedSearchPosts } from '@atcute/client/lexicons';
 import { josh, joshFeeds } from './josh';
+import postsApi from './postsApi';
 import { Env, Feed, Post } from './types';
 import xrpcFactory from './xrpcFactory';
 
@@ -10,33 +11,7 @@ import xrpcFactory from './xrpcFactory';
 
 
 
-class Cursors {
-	constructor(private KV: KVNamespace, private endpoint: string, private type: string) { }
 
-	private cursorkKey(feed: Feed) {
-		return `cursor:${this.type}:${this.endpoint}:${feed.did}:${feed.rKey}`;
-	}
-	async getCursor(feed: Feed): Promise<string | undefined> {
-		const cursor = await this.KV.get(
-			this.cursorkKey(feed)
-		);
-		if (!cursor) {
-			return undefined
-		}
-		return cursor;
-	}
-	async setCursor(feed: Feed, cursor?: string) {
-		if (!cursor) {
-			return await this.KV.delete(
-				this.cursorkKey(feed)
-			);
-		}
-		return await this.KV.put(
-			this.cursorkKey(feed),
-			cursor
-		);
-	}
-}
 
 
 
@@ -168,20 +143,6 @@ class Posts {
 	}
 }
 
-class Feeds {
-
-	constructor(private feeds: Feed[]) { }
-	isValid(did: string, rKey: string): boolean {
-		return - 1 > this.feeds
-			.findIndex(feed => feed.did === did && feed.rKey === rKey);
-	}
-	find(did: string, rKey: string): Feed | undefined {
-		return this.feeds.find(feed => feed.did === did && feed.rKey === rKey);
-	}
-}
-
-const endpoint = 'app.bsky.feed.getFeedSkeleton';
-const searchEndpoint = 'app.bsky.feed.searchPosts';
 
 const DID_JSON = {
 	"@context": ["https://www.w3.org/ns/did/v1"],
@@ -225,9 +186,14 @@ function errorIfJosh(did: string) : Response | undefined {
 		});
 	}
 }
+
+
 export default {
 	async fetch(request, env: Env, ctx: ExecutionContext) {
 		const url = new URL(request.url);
+		if( url.pathname.startsWith('/api/posts')){
+			return await postsApi(request,env);
+		}
 
 		console.log({
 			url:request.url,
