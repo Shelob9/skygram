@@ -11,7 +11,7 @@
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",
     "preview": "vite preview",
-    "deploy": "bunx wrangler deploy  --assets ./dist --name skygram-web --compatibility-date 2024-11-04"
+    "deploy": "bunx wrangler deploy --assets ./dist --name skygram-web --compatibility-date 2024-11-04"
   },
   "dependencies": {
     "@atproto/api": "^0.13.14",

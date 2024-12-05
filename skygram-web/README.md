@@ -12,4 +12,4 @@ Run from root dir is better
 
 - `bun run build`
 - `bunx wrangler deploy  --assets ./dist --name skygram-web --compatibility-date 2024-11-04`
-- `bunx wrangler deploy  --assets ./dist --name skygram-web-router --compatibility-date 2024-11-04`
+- `bunx wrangler deploy  --assets ./dist --name skygram-web-oauth --compatibility-date 2024-11-04`

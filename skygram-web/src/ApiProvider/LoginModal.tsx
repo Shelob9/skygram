@@ -1,9 +1,11 @@
-import { configureOAuth, createAuthorizationUrl, resolveFromIdentity } from '@atcute/oauth-browser-client';
 import { Button, Dialog, DialogPanel, DialogTitle } from '@headlessui/react';
 import clsx from 'clsx';
 import { LoaderCircleIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import InputField from '../components/Form/InputField';
+import { destorySession, startLogin } from './BskyAuth';
+import { useApi } from './useApi';
+
 
 const buttonClassName = clsx(
   "hover:scale-105 transition-transform duration-200 ease-out",
@@ -12,13 +14,15 @@ const buttonClassName = clsx(
    "focus:outline-none  data-[focus]:outline-1 data-[focus]:outline-white",
    "text-sm font-medium text-black data-[hover]:text-black"
 );
+
 export default function LoginModal() {
     const [isOpen, setIsOpen] = useState(false)
     const [username, setUsername] = useState('')
     const [error, setError] = useState('')
     const [isLoading, setIsLoading] = useState(false)
-
+    const {loggedInUser} = useApi()
     function open() {
+        setUsername('bot.josh412.com')
         setIsOpen(true)
     }
 
@@ -28,33 +32,18 @@ export default function LoginModal() {
 
     function onLogin() {
       setIsLoading(true)
-      resolveFromIdentity(username.replace('@', ''))
-        .then(({ identity, metadata }) => {
-          createAuthorizationUrl({
-              metadata: metadata,
-              identity: identity,
-              scope: 'atproto transition:generic',
-          }).then((authUrl) => {
-              setTimeout(() => {
-                  window.location.assign(authUrl);
-              }, 2000);
-          }).catch((error) => {
-              console.error(error);
-              setError(error.message);
-
-          }).finally(() => {
-              setIsLoading(false);
-          });
+      startLogin(username).then(() => {
+        //SHOULD NEVER BE HERE.
+      }).catch((error) => {
+        console.error({startLoginError:error})
+        setError(error.message)
+      }).finally(() => {
+        setIsLoading(false)
       });
+
     }
 
     useEffect(() => {
-      configureOAuth({
-        metadata: {
-          client_id: 'https://skygram.app/api/oauth.json',
-          redirect_uri: 'https://skygram.app/oauth',
-        },
-      });
     },[]);
 
     useEffect(() => {
@@ -62,6 +51,12 @@ export default function LoginModal() {
         setError('')
       }
     },[username])
+
+    if(loggedInUser) {
+      return <Button className={buttonClassName} onClick={() => destorySession()}>
+        Logout
+      </Button>
+    }
 
     return (
         <>

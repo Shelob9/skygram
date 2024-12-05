@@ -129,7 +129,7 @@ app.get('/api/oauth.json', (c) => {
     "logo_uri": `https://cdn.josh412.com/uploads/2024/06/macy-bear.jpg`,
     "tos_uri": `${url}/tos`,
     "policy_uri": `${url}/policy`,
-    "redirect_uris": [url, `${url}/oauth`],
+    "redirect_uris": [url],
     "scope":'atproto transition:generic',
     "grant_types": [
       "authorization_code",

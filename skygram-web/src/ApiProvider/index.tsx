@@ -1,17 +1,11 @@
 import '@atcute/bluesky/lexicons';
-import { simpleFetchHandler, XRPC } from '@atcute/client';
-import { getSession, OAuthUserAgent } from '@atcute/oauth-browser-client';
-import { Agent } from '@atproto/api';
+import { simpleFetchHandler, XRPC, } from '@atcute/client';
+import { AppBskyActorDefs } from '@atcute/client/lexicons';
+import { Agent, } from '@atproto/api';
 import { ReactNode, useEffect, useState } from 'react';
 import feeds from '../Skygram/feeds';
 import ApiContext from './ApiContext';
-
-async function resumeSession(did:string) {
-  const session = await getSession(`did:${did}`, { allowStale: true });
-  return session;
-}
-
-
+import { handleOauth, isOauthReturn, restoreSession } from './BskyAuth';
 
 
 const ApiProvider = ({ children,agent }: {
@@ -19,30 +13,55 @@ const ApiProvider = ({ children,agent }: {
     children: ReactNode
 }) => {
     const [currentFeed, setCurrentFeed] = useState(feeds[0].did);
-    const xrpc = new XRPC({ handler: simpleFetchHandler({ service: 'https://api.bsky.app' }) });
+    const [xrpc, setXrpc] = useState<XRPC | null>(() => new XRPC({ handler: simpleFetchHandler({ service: 'https://api.bsky.app' }) }));
+    const [did, setDid] = useState<string | undefined>(undefined);
+    const [loggedInUser, setLoggedInUser] = useState<AppBskyActorDefs.ProfileViewDetailed|undefined>(undefined);
+    useEffect(() => {
+      if(isOauthReturn()){
+        handleOauth().then((result) => {
+          if(result && result.xrpc){
+            setXrpc(result.xrpc)
+          }
+          //reload page
+          window.location.href = window.location.origin
+        }).catch((e) => {
+          console.error({handleOauthError:e})
+        });
+      }else{
+        restoreSession().then((result) => {
+
+          if(result && result.xrpc){
+            setXrpc(result.xrpc)
+          }
+
+          if(result && result.did){
+            setDid(result.did)
+          }
+        }).catch((e) => {
+          console.error({restoreSessionError:e})
+        });
+      }
+    },[])
 
     useEffect(() => {
-      resumeSession(`did:plc:jr2c44ndobinz7s7by4j73hb`).then(session => {
-        console.log(session);
-        const agent = new OAuthUserAgent(session);
-        const rpc = new XRPC({ handler: agent });
-        rpc.get('com.atproto.identity.resolveHandle', {
+      if(did && xrpc){
+        xrpc.get('app.bsky.actor.getProfile', {
           params: {
-            handle: 'josh412.com',
-          },
-        }).then(({ data }) => {
-          console.log(data);
+            actor: did,
+          }
+        }).then((result) => {
+          setLoggedInUser(result)
         });
-      });
-
-    },[])
+      }
+    },[did,xrpc])
     return (
       <ApiContext.Provider value={{
         preferredLanguages: 'en-US,en',
         agent,
         currentFeed,
         setCurrentFeed,
-        xrpc
+        xrpc,
+        loggedInUser
       }}>
         {children}
       </ApiContext.Provider>

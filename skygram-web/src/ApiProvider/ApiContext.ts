@@ -1,5 +1,6 @@
 import { XRPC } from '@atcute/client';
-import { Agent } from '@atproto/api';
+import { AppBskyActorDefs } from '@atcute/client/lexicons';
+import { Agent, } from '@atproto/api';
 import { createContext } from 'react';
 import feeds from '../Skygram/feeds';
 
@@ -9,6 +10,7 @@ export interface ApiContextType {
   currentFeed: string;
   setCurrentFeed: (feed: string) => void;
   xrpc: XRPC;
+  loggedInUser: AppBskyActorDefs.ProfileViewDetailed|undefined
 
 }
 
@@ -17,6 +19,7 @@ export interface ApiContextType {
   // @ts-ignore
   agent:null,
   currentFeed: feeds[0].did,
-  setCurrentFeed: () => {}
+  setCurrentFeed: () => {},
+  loggedInUser: undefined
 });
 export default ApiContext;
