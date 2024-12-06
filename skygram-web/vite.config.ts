@@ -50,7 +50,7 @@ export default defineConfig(({ mode }:{}) => {
                   tag: 'aside',
                   attrs:{
                     id: 'skygram-main-aside',
-                    class: `hidden md:inline-grid md:col-span-1`,
+                    class: `md:inline-grid md:col-span-1`,
                   },
                 }
               ],
