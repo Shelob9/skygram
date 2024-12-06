@@ -8,7 +8,44 @@ import FeedView from "./Feeds/FeedView";
 import { fetchFeed, fetchFeedQueryKeys } from "./Feeds/useFeed";
 import Header from "./Header";
 
-
+const FeedsUsedSide = () => {
+    const {currentFeed} = useApi();
+    return (
+        <Aside title="Feeds Used">
+            <>
+                <ul className="mt-4">
+                    {feeds.map((feed) => {
+                        const isActive = currentFeed && feed.rkey === currentFeed.rkey;
+                        return (
+                            <li
+                                key={feed.rkey}
+                                className={`mb-4 ${isActive ? "bg-gray-200 border-b border-gray-300" : ""}`}
+                            >
+                                <h3 className="font-bold">
+                                    <a
+                                        rel="noreferrer"
+                                        target="_blank"
+                                        href={`https://bsky.app/profile/${feed.didDisplay}/feed/${feed.rkey}`}
+                                    >
+                                        {feed.emoji} {feed.label}
+                                    </a>
+                                </h3>
+                                <a
+                                    href={`https://bsky.app/profile/${feed.didDisplay}`}
+                                    className="ml-4 text-blue-500"
+                                    rel="noreferrer"
+                                    target="_blank"
+                                >
+                                    {feed.displayName ? `${feed.displayName} (@${feed.didDisplay})` : `@${feed.didDisplay}`}
+                                </a>
+                            </li>
+                        );
+                    })}
+                </ul>
+            </>
+        </Aside>
+    )
+}
 
 export default function Feed() {
     const headerRef = useRef<HTMLDivElement>(null);
@@ -52,7 +89,7 @@ export default function Feed() {
     return (
         <>
             {headerRef.current && createPortal(<Header />, headerRef.current)}
-            {asideRef.current && createPortal(<Aside />, asideRef.current)}
+            {asideRef.current && createPortal(<FeedsUsedSide />, asideRef.current)}
             <FeedView queryFn={queryFn} queryKey={queryKey} />
         </>
     );
