@@ -50,7 +50,7 @@ const ApiProvider = ({ children,agent }: {
             actor: did,
           }
         }).then((result) => {
-          setLoggedInUser(result)
+          setLoggedInUser(result.data)
         });
       }
     },[did,xrpc])
@@ -60,7 +60,7 @@ const ApiProvider = ({ children,agent }: {
         agent,
         currentFeed,
         setCurrentFeed,
-        xrpc,
+        xrpc: xrpc as XRPC,
         loggedInUser
       }}>
         {children}

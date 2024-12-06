@@ -1,12 +1,12 @@
 import { AppBskyFeedDefs } from "@atproto/api";
-import { useEffect, useMemo, useRef, useState } from "react";
-import { createPortal } from "react-dom";
+import { useMemo, useState } from "react";
 import { useApi } from "../ApiProvider/useApi";
 import Aside from "./Aside";
 import feeds, { T_Feed } from "./feeds";
 import FeedView from "./Feeds/FeedView";
 import { fetchFeed, fetchFeedQueryKeys } from "./Feeds/useFeed";
 import Header from "./Header";
+import PortalAreas from "./PortalAreas";
 
 const FeedsUsedSide = () => {
     const {currentFeed} = useApi();
@@ -47,9 +47,10 @@ const FeedsUsedSide = () => {
     )
 }
 
+
+
 export default function Feed() {
-    const headerRef = useRef<HTMLDivElement>(null);
-    const asideRef = useRef<HTMLDivElement>(null);
+
     const [cursor,setCursor] = useState<string|undefined>(undefined)
     const {currentFeed,xrpc,preferredLanguages} = useApi()
     const {did,rkey} = useMemo<T_Feed>(() => {
@@ -70,26 +71,9 @@ export default function Feed() {
         )
     }
 
-    useEffect(() => {
-        const headerElement = document.getElementById('skygram-header');
-        if (headerElement) {
-            headerRef.current = headerElement;
-        }
-    }, []);
-
-    useEffect(() => {
-        const asideElement = document.getElementById('skygram-main-aside');
-        if (asideElement) {
-            asideRef.current = asideElement;
-        }
-    }, []);
-
-
-
     return (
         <>
-            {headerRef.current && createPortal(<Header />, headerRef.current)}
-            {asideRef.current && createPortal(<FeedsUsedSide />, asideRef.current)}
+            <PortalAreas Header={() =><Header />} Aside={FeedsUsedSide} />
             <FeedView queryFn={queryFn} queryKey={queryKey} />
         </>
     );

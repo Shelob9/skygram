@@ -1,11 +1,11 @@
-import { Button, Dialog, DialogPanel, DialogTitle } from '@headlessui/react';
+import { Button, Dialog, DialogPanel, DialogTitle, Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react';
+import { Link } from '@tanstack/react-router';
 import clsx from 'clsx';
 import { LoaderCircleIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import InputField from '../components/Form/InputField';
 import { destorySession, startLogin } from './BskyAuth';
 import { useApi } from './useApi';
-
 
 const buttonClassName = clsx(
   "hover:scale-105 transition-transform duration-200 ease-out",
@@ -15,6 +15,44 @@ const buttonClassName = clsx(
    "text-sm font-medium text-black data-[hover]:text-black"
 );
 
+const LogoutButton = () => (
+  <Button className={clsx(buttonClassName,'text-white border-white mt-4 data-[hover]:text-black data-[hover]:bg-white data-[hover]:border-white')} onClick={() => destorySession()}>
+      Logout
+  </Button>
+);
+
+function LoggedInMenu() {
+  return (
+    <Menu>
+      <MenuButton
+        className={buttonClassName}
+      >
+        Logged In
+      </MenuButton>
+      <MenuItems
+                className="rounded border py-4 px-2 bg-black text-white  origin-top transition duration-200 ease-out data-[closed]:scale-95 data-[closed]:opacity-0"
+      anchor="bottom">
+        <MenuItem >
+          {({ close }) => (
+            <Link className={clsx('border-b-2','block')} href="/feedgen" onClick={close}>
+              Feed Gen
+            </Link>
+          )}
+        </MenuItem>
+        <MenuItem>
+          {({ close }) => (
+            <Link className={clsx('border-b-2','block')}  href="/" onClick={close}>
+              Home
+            </Link>
+          )}
+        </MenuItem>
+        <MenuItem>
+            <LogoutButton />
+        </MenuItem>
+      </MenuItems>
+    </Menu>
+  )
+}
 export default function LoginModal() {
     const [isOpen, setIsOpen] = useState(false)
     const [username, setUsername] = useState('')
@@ -53,9 +91,7 @@ export default function LoginModal() {
     },[username])
 
     if(loggedInUser) {
-      return <Button className={buttonClassName} onClick={() => destorySession()}>
-        Logout
-      </Button>
+      return <LoggedInMenu />
     }
 
     return (
