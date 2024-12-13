@@ -3,7 +3,6 @@ import { AppBskyFeedDefs } from "@atcute/client/lexicons";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { T_Feed } from "./feeds";
-import { fetchFeed } from "./Feeds/useFeed";
 const BSKY_FEEDS_COLLECTION = 'app.bsky.feed.generator'
 export type Feed = {
     repo: string;
@@ -166,21 +165,31 @@ export function useActorCustomFeeds({xrpc,did}:UseFeeds_Props){
 export function useBlueskyFeeds({xrpc,did}:UseFeeds_Props){
     const [customFeeds, setCustomFeeds] = useState<Feed[]>([]);
 
-    const {data:preferences,isLoading:isLoadingPreferences} = useQuery({
-        queryKey: ['app.bsky.actor.getPreferences', {actor: did}],
+    const {data} = useQuery({
+        queryKey: did?['app.bsky.feed.getActorFeeds', {actor: did}]:[],
         queryFn: async ()=>{
-            return xrpc.get('app.bsky.actor.getPreferences', {
-
-              }).then((data)=>{
-                console.log({data});
-                return data.data.preferences;
-                return data.data;
-              });
+            if(!did){
+                return [];
             }
+            return xrpc.get('app.bsky.feed.getActorFeeds', {
+                params: {
+                  actor: did
+                },
+              }).then((r)=>{
+                console.log({r});
+                return r.data.feeds;
+              });
+
         },
-    );
+    });
     const subscribedUris = useMemo(()=>{
-        if(preferences && Array.isArray(preferences)){
+        if(data){
+            data.map((feed:AppBskyFeedDefs.FeedView)=>{
+                return feed.uri;
+            });
+        }
+        return [];
+        if(data && Array.isArray(preferences)){
             const feedPrefs = preferences.find((pref)=>pref.$type === 'app.bsky.actor.defs#savedFeedsPrefV2');
             if(feedPrefs){
                 return feedPrefs.items.filter(item => 'feed' === item.type ).map((item)=>item.value)
@@ -188,7 +197,7 @@ export function useBlueskyFeeds({xrpc,did}:UseFeeds_Props){
         }
         return [];
 
-    },[preferences]);
+    },[data]);
     const {data:subscribedFeeds,isLoading:isLoadingSubscribedFeeds} = useQuery({
         queryKey: ['app.bsky.feed.getFeedGenerators',...subscribedUris, {actor: did}],
         queryFn: async ()=>{
@@ -200,7 +209,8 @@ export function useBlueskyFeeds({xrpc,did}:UseFeeds_Props){
                   feeds: subscribedUris,
                 },
               }).then((data)=>{
-                return data.data.feeds;
+                console.log({data});
+                return undefined;
               });
             }
         },
@@ -223,18 +233,7 @@ export function useBlueskyFeeds({xrpc,did}:UseFeeds_Props){
     },[subscribedFeeds]);
     const [isLoading, setIsLoading] = useState(false);
 
-    useEffect(()=>{
-        if(subscribedFeeds){
-            subscribedFeeds.forEach((feed:AppBskyFeedDefs.GeneratorView)=>{
-                fetchFeed({uri:feed.uri,xrpc,did:feed.creator.did,rkey:feed.uri.split('/').pop() as string,preferredLanguages:'en'}).then((data)=>{
-                    console.log({data});
-                });
-            });
 
-
-        }
-
-    },[subscribedFeeds,xrpc]);
     useEffect(()=>{
         setIsLoading(true);
         getCollection({

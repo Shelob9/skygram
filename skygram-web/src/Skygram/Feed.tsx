@@ -1,5 +1,5 @@
 import { AppBskyFeedDefs } from "@atproto/api";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useApi } from "../ApiProvider/useApi";
 import Aside from "./Aside";
 import feeds, { T_Feed } from "./feeds";
@@ -55,7 +55,6 @@ export default function Feed() {
 
     const {currentFeed,setCurrentFeed,xrpc,preferredLanguages,loggedInUser,isLoggedIn} = useApi()
     const {subscribedFeeds } = useBlueskyFeeds({xrpc,did:loggedInUser?.did ?? ''});
-    console.log({subscribedFeeds});
     const feedsToSelectFrom = useMemo(() => {
         if(isLoggedIn && subscribedFeeds && subscribedFeeds.length > 0){
             return subscribedFeeds;
@@ -72,7 +71,7 @@ export default function Feed() {
         () => [uri,feedDid, rkey, {cursor,preferredLanguages}],
         [uri, feedDid, rkey, cursor, preferredLanguages]
     )
-    const queryFn = () => {
+    const queryFn = useCallback(() => {
         if(!xrpc||!uri){
             return [];
         }
@@ -90,7 +89,7 @@ export default function Feed() {
                 return data;
             }
         )
-    }
+    },[xrpc,uri,feedDid,rkey,cursor,preferredLanguages])
 
     return (
         <>
