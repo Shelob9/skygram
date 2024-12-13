@@ -1,19 +1,27 @@
 import '@atcute/bluesky/lexicons';
-import { simpleFetchHandler, XRPC, } from '@atcute/client';
+import { CredentialManager, simpleFetchHandler, XRPC, } from '@atcute/client';
 import { AppBskyActorDefs } from '@atcute/client/lexicons';
-import { Agent, } from '@atproto/api';
 import { ReactNode, useEffect, useState } from 'react';
 import feeds from '../Skygram/feeds';
 import ApiContext from './ApiContext';
-import { handleOauth, isOauthReturn, restoreSession } from './BskyAuth';
+import { destorySession, handleOauth, isOauthReturn, restoreSession } from './BskyAuth';
 
+// in dev mode, try to use password
+async  function tryPasswordLogin():Promise<XRPC>{
+  const manager = new CredentialManager({ service: 'https://bsky.social' });
+  const xrpc = new XRPC({ handler: manager });
 
-const ApiProvider = ({ children,agent }: {
-    agent: Agent;
+  await manager.login({ identifier: import.meta.env.VITE_DEV_BOT_USERNAME, password: import.meta.env.VITE_DEV_BOT_PASSWORD });
+
+  return xrpc;
+}
+const ApiProvider = ({ children }: {
     children: ReactNode
 }) => {
     const [currentFeed, setCurrentFeed] = useState(feeds[0].did);
-    const [xrpc, setXrpc] = useState<XRPC | null>(() => new XRPC({ handler: simpleFetchHandler({ service: 'https://api.bsky.app' }) }));
+    const [xrpc, setXrpc] = useState<XRPC | null>(() => {
+      return new XRPC({ handler: simpleFetchHandler({ service: 'https://api.bsky.app' }) })
+  });
     const [did, setDid] = useState<string | undefined>(undefined);
     const [loggedInUser, setLoggedInUser] = useState<AppBskyActorDefs.ProfileViewDetailed|undefined>(undefined);
     useEffect(() => {
@@ -39,6 +47,7 @@ const ApiProvider = ({ children,agent }: {
           }
         }).catch((e) => {
           console.error({restoreSessionError:e})
+          destorySession()
         });
       }
     },[])
@@ -54,10 +63,19 @@ const ApiProvider = ({ children,agent }: {
         });
       }
     },[did,xrpc])
+    // in dev mode, try to use password
+    useEffect( () => {
+      if(  import.meta.env.MODE === 'development' ){
+        tryPasswordLogin().then((result) => {
+          setXrpc(result)
+          setDid(`did:plc:jr2c44ndobinz7s7by4j73hb`)
+        });
+      }
+    },[])
+
     return (
       <ApiContext.Provider value={{
         preferredLanguages: 'en-US,en',
-        agent,
         currentFeed,
         setCurrentFeed,
         xrpc: xrpc as XRPC,

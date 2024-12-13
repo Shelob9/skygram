@@ -3,16 +3,19 @@ import { useMemo, useState } from "react";
 import { useApi } from "../ApiProvider/useApi";
 import Aside from "./Aside";
 import feeds, { T_Feed } from "./feeds";
+import FeedSelector from "./Feeds/FeedSelector";
 import FeedView from "./Feeds/FeedView";
-import { fetchFeed, fetchFeedQueryKeys } from "./Feeds/useFeed";
+import { fetchFeed } from "./Feeds/useFeed";
 import Header from "./Header";
 import PortalAreas from "./PortalAreas";
+import { useBlueskyFeeds } from "./useSkygramFeeds";
 
 const FeedsUsedSide = () => {
-    const {currentFeed} = useApi();
+    const {currentFeed,isLoggedIn,loggedInUser} = useApi();
     return (
         <Aside title="Feeds Used">
             <>
+               {isLoggedIn ?  <h3>For {loggedInUser?.displayName ?? loggedInUser?.handle }</h3>:null}
                 <ul className="mt-4">
                     {feeds.map((feed) => {
                         const isActive = currentFeed && feed.rkey === currentFeed.rkey;
@@ -48,22 +51,40 @@ const FeedsUsedSide = () => {
 }
 
 
-
 export default function Feed() {
 
+    const {currentFeed,setCurrentFeed,xrpc,preferredLanguages,loggedInUser,isLoggedIn} = useApi()
+    const {subscribedFeeds } = useBlueskyFeeds({xrpc,did:loggedInUser?.did ?? ''});
+    console.log({subscribedFeeds});
+    const feedsToSelectFrom = useMemo(() => {
+        if(isLoggedIn && subscribedFeeds && subscribedFeeds.length > 0){
+            return subscribedFeeds;
+        }
+        return feeds;
+    },[isLoggedIn,subscribedFeeds])
+    const {rkey,uri,did:feedDid} = useMemo<T_Feed>(() => {
+
+        return feedsToSelectFrom.find((feed) => feed.did === currentFeed) || feeds[0]
+    },[currentFeed, feedsToSelectFrom])
     const [cursor,setCursor] = useState<string|undefined>(undefined)
-    const {currentFeed,xrpc,preferredLanguages} = useApi()
-    const {did,rkey} = useMemo<T_Feed>(() => {
-        return feeds.find((feed) => feed.did === currentFeed) || feeds[0]
-    },[currentFeed])
 
     const queryKey = useMemo<Array<string|object>>(
-        () => fetchFeedQueryKeys({did,rkey,cursor:undefined,preferredLanguages}),
-        [did,rkey,preferredLanguages]
+        () => [uri,feedDid, rkey, {cursor,preferredLanguages}],
+        [uri, feedDid, rkey, cursor, preferredLanguages]
     )
-
     const queryFn = () => {
-        return fetchFeed({ xrpc, cursor, did, rkey, preferredLanguages} ).then(
+        if(!xrpc||!uri){
+            return [];
+        }
+        console.log({uri});
+        return fetchFeed({
+            xrpc,
+            cursor,
+            did:feedDid,
+            rkey,
+            uri,
+            preferredLanguages
+        } ).then(
             (data:{cursor?:string,feed:AppBskyFeedDefs.FeedViewPost[]}) => {
                 setCursor(data.cursor);
                 return data;
@@ -73,7 +94,17 @@ export default function Feed() {
 
     return (
         <>
-            <PortalAreas Header={() =><Header />} Aside={FeedsUsedSide} />
+            <PortalAreas Header={() =>
+                <Header>
+                    <FeedSelector
+                        feeds={feedsToSelectFrom}
+                        currentFeed={currentFeed}
+                        onChangeFeed={(feed) => {
+                            setCurrentFeed(feed.did);
+                        }}
+                    />
+                </Header>
+            } Aside={FeedsUsedSide} />
             <FeedView queryFn={queryFn} queryKey={queryKey} />
         </>
     );

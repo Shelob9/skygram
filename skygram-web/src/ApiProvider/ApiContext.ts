@@ -1,11 +1,9 @@
 import { XRPC } from '@atcute/client';
 import { AppBskyActorDefs } from '@atcute/client/lexicons';
-import { Agent, } from '@atproto/api';
 import { createContext } from 'react';
 import feeds from '../Skygram/feeds';
 
 export interface ApiContextType {
-  agent: Agent;
   preferredLanguages: string;
   currentFeed: string;
   setCurrentFeed: (feed: string) => void;
@@ -17,9 +15,10 @@ export interface ApiContextType {
  const ApiContext = createContext<ApiContextType>({
   preferredLanguages: 'en-US,en',
   // @ts-ignore
-  agent:null,
   currentFeed: feeds[0].did,
   setCurrentFeed: () => {},
-  loggedInUser: undefined
+  loggedInUser: undefined,
+  //ts-ignore
+  xrpc: undefined,
 });
 export default ApiContext;

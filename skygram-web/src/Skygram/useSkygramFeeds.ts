@@ -1,5 +1,9 @@
 import { XRPC } from "@atcute/client";
-import { useEffect, useState } from "react";
+import { AppBskyFeedDefs } from "@atcute/client/lexicons";
+import { useQuery } from "@tanstack/react-query";
+import { useEffect, useMemo, useState } from "react";
+import { T_Feed } from "./feeds";
+import { fetchFeed } from "./Feeds/useFeed";
 const BSKY_FEEDS_COLLECTION = 'app.bsky.feed.generator'
 export type Feed = {
     repo: string;
@@ -138,10 +142,99 @@ type UseFeeds_Props = {
     xrpc: XRPC,
     did: string
 }
+export function useActorCustomFeeds({xrpc,did}:UseFeeds_Props){
+    const {data,isLoading} = useQuery({
+        queryKey: ['app.bsky.feed.getActorFeeds', {actor: did}],
+        queryFn: async ()=>{
+            return xrpc.get('app.bsky.feed.getActorFeeds', {
+                params: {
+                  actor: did
+                },
+              }).then((data)=>{
+                console.log({data});
+                return data.data.feeds;
+              });
+            }
+        },
+    );
+
+    return {
+        actorCustomFeeds: data,
+        isLoadingActorFeeds: isLoading
+    }
+}
 export function useBlueskyFeeds({xrpc,did}:UseFeeds_Props){
-    const [feeds, setFeeds] = useState<Feed[]>([]);
+    const [customFeeds, setCustomFeeds] = useState<Feed[]>([]);
+
+    const {data:preferences,isLoading:isLoadingPreferences} = useQuery({
+        queryKey: ['app.bsky.actor.getPreferences', {actor: did}],
+        queryFn: async ()=>{
+            return xrpc.get('app.bsky.actor.getPreferences', {
+
+              }).then((data)=>{
+                console.log({data});
+                return data.data.preferences;
+                return data.data;
+              });
+            }
+        },
+    );
+    const subscribedUris = useMemo(()=>{
+        if(preferences && Array.isArray(preferences)){
+            const feedPrefs = preferences.find((pref)=>pref.$type === 'app.bsky.actor.defs#savedFeedsPrefV2');
+            if(feedPrefs){
+                return feedPrefs.items.filter(item => 'feed' === item.type ).map((item)=>item.value)
+            }
+        }
+        return [];
+
+    },[preferences]);
+    const {data:subscribedFeeds,isLoading:isLoadingSubscribedFeeds} = useQuery({
+        queryKey: ['app.bsky.feed.getFeedGenerators',...subscribedUris, {actor: did}],
+        queryFn: async ()=>{
+            if(!subscribedUris || subscribedUris.length === 0){
+                return [];
+            }
+            return xrpc.get('app.bsky.feed.getFeedGenerators', {
+                params: {
+                  feeds: subscribedUris,
+                },
+              }).then((data)=>{
+                return data.data.feeds;
+              });
+            }
+        },
+    );
+    const subscribed : T_Feed[] = useMemo(()=>{
+        if(subscribedFeeds){
+            return subscribedFeeds.map((feed:AppBskyFeedDefs.GeneratorView)=>{
+                const rkey = feed.uri.split('/').pop() as string;
+                return {
+                    rkey,
+                    did: feed.creator.did,
+                    label: feed.displayName,
+                    emoji: '',
+                    didDisplay: feed.creator.did,
+                    uri: feed.uri,
+                }
+            });
+        }
+        return [];
+    },[subscribedFeeds]);
     const [isLoading, setIsLoading] = useState(false);
 
+    useEffect(()=>{
+        if(subscribedFeeds){
+            subscribedFeeds.forEach((feed:AppBskyFeedDefs.GeneratorView)=>{
+                fetchFeed({uri:feed.uri,xrpc,did:feed.creator.did,rkey:feed.uri.split('/').pop() as string,preferredLanguages:'en'}).then((data)=>{
+                    console.log({data});
+                });
+            });
+
+
+        }
+
+    },[subscribedFeeds,xrpc]);
     useEffect(()=>{
         setIsLoading(true);
         getCollection({
@@ -149,14 +242,13 @@ export function useBlueskyFeeds({xrpc,did}:UseFeeds_Props){
             repo: did,
             collection: BSKY_FEEDS_COLLECTION
         }).then((data)=>{
-            console.log({data});
             if(data){
                 //Saved bluesky feeds.
                 //a) make them work with feedgen (save in db or query from bsky api)
                 //b) save list of feeds to display on site with did, order and emoji
                 //c) On poster page, show list of feeds with emoji and name
                 //d) On poster page, display those feeds
-                setFeeds(data.records.map((record:Record<string,any>)=>{
+                setCustomFeeds(data.records.map((record:Record<string,any>)=>{
                     return {
                         ...record.value,
                         uri: record.uri,
@@ -172,8 +264,10 @@ export function useBlueskyFeeds({xrpc,did}:UseFeeds_Props){
     },[did,xrpc])
 
     return {
-        blueskyFeeds: feeds,
-        isLoadingBlueskyFeeds: isLoading
+        customFeeds,
+        isLoadingBlueskyFeeds: isLoading,
+        subscribedFeeds:subscribed as T_Feed[],
+        isLoadingSubscribedFeeds,
     }
 
 }

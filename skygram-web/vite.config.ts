@@ -5,7 +5,7 @@ import { defineConfig, } from 'vite';
 import { createHtmlPlugin } from 'vite-plugin-html';
 
 // https://vitejs.dev/config/
-export default defineConfig(({ mode }:{}) => {
+export default defineConfig(({ mode }) => {
   const isProd = mode === 'production';
   return {
     plugins: [

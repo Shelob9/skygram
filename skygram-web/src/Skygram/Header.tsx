@@ -7,7 +7,6 @@ import Bluesky from "../components/Bluesky";
 import Github from "../components/Github";
 import IfFlag from '../components/IfFlag';
 import feeds, { T_Feed } from './feeds';
-import FeedSelector from './Feeds/FeedSelector';
 
 const logo : {
     src:string;
@@ -40,7 +39,9 @@ function UserAvatar(
 }
 
 //<header tag is in template
-export default function Header() {
+export default function Header({children}:{
+    children?: React.ReactNode
+}) {
   const pathname = useLocation({
     select: (location) => location.pathname,
   })
@@ -89,11 +90,7 @@ export default function Header() {
             >
               <SearchIcon />
             </div>
-            {'/' === pathname ?(
-            <FeedSelector
-              currentFeed={feed}
-              onChangeFeed={setFeed}
-            />):null}
+            {children ?children:null}
           </div>
           {/** <!-- Right --> */}
           <div className="flex space-x-4 items-center">

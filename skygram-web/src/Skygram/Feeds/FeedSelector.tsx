@@ -1,17 +1,18 @@
-import feeds, { T_Feed } from "../feeds";
+import { T_Feed } from "../feeds";
 
 interface FeedSelectorProps {
     currentFeed: T_Feed;
     onChangeFeed: (feed: T_Feed) => void;
+    feeds: T_Feed[];
 }
 function key(feed: T_Feed) {
     return`${feed.did}-${feed.rkey}`;
 }
 
-export default function FeedSelector({ currentFeed, onChangeFeed }: FeedSelectorProps) {
+export default function FeedSelector({ feeds,currentFeed, onChangeFeed }: FeedSelectorProps) {
     return (
         <ul className="flex flex-wrap">
-            {feeds.map(feed => {
+            {feeds ? feeds.map(feed => {
                 const isActive = currentFeed && key(feed) === key(currentFeed);
                 return (
                     <li
@@ -27,7 +28,7 @@ export default function FeedSelector({ currentFeed, onChangeFeed }: FeedSelector
                         </button>
                     </li>
                 );
-            })}
+            }):null}
         </ul>
     );
 }

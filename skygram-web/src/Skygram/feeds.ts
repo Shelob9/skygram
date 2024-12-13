@@ -4,7 +4,8 @@ export type T_Feed ={
     label: string
     emoji: string
     didDisplay: string,
-    displayName?: string
+    displayName?: string,
+    uri: string
 }
 const feeds : T_Feed[] = [
     //Gardening
@@ -15,15 +16,16 @@ const feeds : T_Feed[] = [
         didDisplay: `eepy.bsky.social`,
        // did: 'eepy.bsky.social',
         label: 'Gardening Feed',
-        emoji: '🌱'
-    },
+        emoji: '🌱',
+        uri: `at://did:plc:5rw2on4i56btlcajojaxwcat/app.bsky.feed.generator/aaao6g552b33`    },
     //toe beans
     {
         did: `eubjsqnf5edgvcc6zuoyixhw`,
         rkey: `toe-beans`,
         label: `Toe Beans`,
         //cat emoji
-        emoji: `🐈`
+        emoji: `🐈`,
+        uri: `at://did:plc:eubjsqnf5edgvcc6zuoyixhw/app.bsky.feed.generator/toe-beans`
     },
     //birds daryllmarie.bsky.social/feed/aaagllxbcbsje
     {
@@ -31,7 +33,8 @@ const feeds : T_Feed[] = [
         rkey: `aaagllxbcbsje`,
         label: `Birds`,
         //bird emoji
-        emoji: `🐦`//
+        emoji: `🐦`,//,
+        uri: `at://did:plc:ffkgesg3jsv2j7aagkzrtcvt/app.bsky.feed.generator/aaagllxbcbsje`
     },
     //mamals
     //https://bsky.app/profile/daryllmarie.bsky.social/feed/aaan2gurxv3kk
@@ -40,7 +43,8 @@ const feeds : T_Feed[] = [
         rkey: `aaan2gurxv3kk`,
         label: `Mamals`,
         //mamal emoji
-        emoji: `🦁`
+        emoji: `🦁`,
+        uri: `at://did:plc:ffkgesg3jsv2j7aagkzrtcvt/app.bsky.feed.generator/aaan2gurxv3kk`
     },
     //marine life
     //https://bsky.app/profile/daryllmarie.bsky.social/feed/aaacjerk7gwek
@@ -51,7 +55,8 @@ const feeds : T_Feed[] = [
         rkey: `aaacjerk7gwek`,
         label: `Marine Life`,
         //fish emoji
-        emoji: `🐟`
+        emoji: `🐟`,
+        uri: `at://did:plc:ffkgesg3jsv2j7aagkzrtcvt/app.bsky.feed.generator/aaacjerk7gwek`,
     },
     //dogs
     //https://bsky.app/profile/crevier.bsky.social/feed/aaangplovi6dw
@@ -62,7 +67,8 @@ const feeds : T_Feed[] = [
         rkey: `aaangplovi6dw`,
         label: `Dogs`,
         //dog emoji
-        emoji: `🐕`
+        emoji: `🐕`,
+        uri: `at://did:plc:lcn5zsz2e7kjwoe4ldf3chr5/app.bsky.feed.generator/aaangplovi6dw`
     }
 ].map(feed => {
     if(!feed.didDisplay && feed.did === `daryllmarie.bsky.social`){

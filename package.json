@@ -3,6 +3,7 @@
   "module": "index.ts",
   "type": "module",
   "devDependencies": {
+    "@atproto/dev-env": "^0.3.66",
     "@hono/vite-cloudflare-pages": "^0.4.2",
     "@hono/vite-dev-server": "^0.17.0",
     "@tailwindcss/typography": "^0.5.15",

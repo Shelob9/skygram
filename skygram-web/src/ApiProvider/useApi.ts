@@ -9,5 +9,8 @@ export const useApi = () => {
 
 
 
-    return context;
+    return {
+      ...context,
+      isLoggedIn: context.loggedInUser !== undefined,
+    };
   };

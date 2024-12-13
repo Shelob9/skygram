@@ -8,16 +8,17 @@ export type UseFeedProps = {
   did: string,
   rkey: string,
   preferredLanguages: string
-  limit?: number
+  limit?: number,
+  uri?: string,
 };
 
-export const fetchFeedQueryKeys = ({ did, rkey, cursor,limit,preferredLanguages }:Omit<UseFeedProps,'agent'>) : Array<string|object> =>
-  [ did, 'app.bsky.feed.generator', rkey, {cursor,preferredLanguages,limit:limit || 30}];
+export const fetchFeedQueryKeys = ({ uri,did, rkey, cursor,limit,preferredLanguages }:Omit<UseFeedProps,'agent'>) : Array<string|object> =>
+  uri ? [uri,{cursor,preferredLanguages,limit:limit || 30}]:[ did, 'app.bsky.feed.generator', rkey, {cursor,preferredLanguages,limit:limit || 30}];
 
-export const fetchFeed = async ({ xrpc, cursor, did, rkey, preferredLanguages }:UseFeedProps) => {
+export const fetchFeed = async ({ uri,xrpc, cursor, did, rkey, preferredLanguages }:UseFeedProps) => {
   const {data} = await xrpc.get('app.bsky.feed.getFeed', {
     params: {
-      feed: AtUri.make(
+      feed: uri ?? AtUri.make(
         did,
         'app.bsky.feed.generator',
         rkey
