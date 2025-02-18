@@ -1,7 +1,7 @@
 import { XRPC } from '@atcute/client';
 import { OAuthUserAgent, configureOAuth, createAuthorizationUrl, deleteStoredSession, finalizeAuthorization, getSession, listStoredSessions, resolveFromIdentity } from '@atcute/oauth-browser-client';
 
-const APP_URL =`https://skygram.com:5000`;//"https://skygram.app"
+const APP_URL ="https://skygram.app"
 
 
 configureOAuth({
